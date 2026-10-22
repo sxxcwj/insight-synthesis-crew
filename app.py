@@ -2,6 +2,10 @@ import os
 import sys
 import time
 from pathlib import Path
+from dotenv import load_dotenv
+
+# 加载 .env 环境变量
+load_dotenv()
 
 import streamlit as st
 
