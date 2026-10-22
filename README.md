@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/LLM-DeepSeek--V4.1--Flash-brightgreen" alt="DeepSeek" />
   <img src="https://img.shields.io/badge/Search-Google%20Serper-orange" alt="Search Engine" />
   <img src="https://img.shields.io/badge/Output-Markdown%20%7C%20Word%20(.docx)-blueviolet" alt="Output Formats" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
 </p>
 
 本项目基于 **CrewAI** 与 **DeepSeek-V4.1-Flash** 构建标准的**两阶段协同研究体系**（Phase 1: 广度情报搜寻与全网线索抓取 -> Phase 2: 深度分析、逻辑交叉比对与事实核验）。系统严格遵循最小权限原则（Least Privilege）进行工具隔离，并支持自愈质检把关、参考文献自动提取与专业排版 Word (.docx) 自动生成及唤起。
@@ -142,3 +143,10 @@ uv run python main.py --plot
 3. **风险警戒标记**：红色标注关键潜在风险点；
 4. **行动建议指引**：绿色标号突出可操作性战略路线；
 5. **四列参考文献表格**：详细罗列 `序号`、`来源机构/文献标题`、`核心论据与支撑事实`、`可访问的原始链接 URL`。
+
+---
+
+## 📄 开源许可证
+
+本项目基于 [MIT License](LICENSE) 开源。
+

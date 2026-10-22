@@ -1,7 +1,9 @@
 [project]
 name = "craw"
 version = "0.1.0"
-description = "Add your description here"
+description = "Two-stage autonomous researcher agent system powered by CrewAI and DeepSeek-Flash"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.14"
 dependencies = [
     "crewai[google-genai]>=0.100.0",
