@@ -10,12 +10,6 @@ src_dir = Path(__file__).resolve().parent / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-from craw.flow import AdvancedTwoStageFlow
-from craw.crew import TwoStageResearchCrew
-from craw.export_docx import get_report_paths, export_markdown_to_docx
-from craw.export_pptx import export_report_to_pptx
-from craw.export_charts import extract_chart_data_from_report, render_consulting_chart
-
 # 页面基础配置
 st.set_page_config(
     page_title="Insight Synthesis Studio · 战略研究控制台",
@@ -167,12 +161,14 @@ if start_btn:
             time.sleep(0.5)
 
             if "Flow" in exec_mode:
+                from craw.flow import AdvancedTwoStageFlow
                 flow_inst = AdvancedTwoStageFlow()
                 flow_inst.state.topic = topic_query.strip()
                 status_box.write("• 阶段一 Scout 智能体正在并发检索关键客观事实与量化指标...")
                 flow_inst.kickoff()
                 status_box.update(label="✅ [全流程完成] 质量门禁验证通过，多模态交付物已全部生成！", state="complete")
             else:
+                from craw.crew import TwoStageResearchCrew
                 crew_obj = TwoStageResearchCrew().crew()
                 status_box.write("• 标准 Crew 线性启动...")
                 result = crew_obj.kickoff(inputs={"topic": topic_query.strip()})

@@ -13,4 +13,6 @@ wheels/
 .env
 reports/
 flow_plot.html
+.agents/
+.claude/
 
