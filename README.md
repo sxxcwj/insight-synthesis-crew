@@ -118,8 +118,8 @@ graph LR
 
 ```bash
 # 克隆仓库
-git clone https://github.com/sxxcwj/craw.git
-cd craw
+git clone https://github.com/sxxcwj/insight-synthesis-crew.git
+cd insight-synthesis-crew
 
 # 复制密钥配置模版
 cp .env.example .env
