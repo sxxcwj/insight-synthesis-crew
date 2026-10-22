@@ -18,10 +18,171 @@ if str(src_dir) not in sys.path:
 # 4A 战略咨询页面配置
 st.set_page_config(
     page_title="Insight Synthesis Studio · 战略研究智能体",
-    page_icon=":material/insights:",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# 注入精细化顶级 4A 咨询设计系统 CSS
+st.markdown("""
+<style>
+    /* 全局排版与基础样式 */
+    html, body, [class*="css"] {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        color: #0F172A;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* 顶部导航与边距微调 */
+    .block-container {
+        padding-top: 1.8rem !important;
+        padding-bottom: 3.5rem !important;
+        max-width: 1280px;
+    }
+
+    /* 4A 咨询级 Executive Hero Header */
+    .hero-container {
+        background: linear-gradient(135deg, #0B132B 0%, #1C2541 60%, #1D4ED8 100%);
+        border-radius: 16px;
+        padding: 32px 36px;
+        color: #FFFFFF;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 30px -5px rgba(11, 19, 43, 0.15), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #93C5FD;
+        margin-bottom: 12px;
+    }
+    .hero-title {
+        font-size: 28px;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px 0;
+        color: #FFFFFF;
+        line-height: 1.25;
+    }
+    .hero-desc {
+        font-size: 14px;
+        color: #CBD5E1;
+        margin: 0;
+        line-height: 1.6;
+        max-width: 820px;
+    }
+
+    /* 4A 咨询级 KPI 卡片组件 */
+    .kpi-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 18px 20px;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        border-color: #CBD5E1;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+    }
+    .kpi-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #64748B;
+        margin-bottom: 6px;
+    }
+    .kpi-value {
+        font-size: 22px;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+        color: #0F172A;
+        margin-bottom: 4px;
+    }
+    .kpi-sub {
+        font-size: 12px;
+        color: #1D4ED8;
+        font-weight: 500;
+    }
+
+    /* 成果交付物卡片（4A 专属文件盒质感） */
+    .delivery-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+        margin-bottom: 8px;
+        transition: all 0.2s ease;
+    }
+    .delivery-card:hover {
+        border-color: #93C5FD;
+        box-shadow: 0 8px 20px -3px rgba(29, 78, 216, 0.08);
+    }
+    .delivery-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+    .badge-word { background: #EFF6FF; color: #1D4ED8; border: 1px solid #DBEAFE; }
+    .badge-ppt  { background: #FFF1F2; color: #E11D48; border: 1px solid #FFE4E6; }
+    .badge-chart{ background: #ECFDF5; color: #059669; border: 1px solid #D1FAE5; }
+    .badge-md   { background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; }
+
+    .delivery-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 4px;
+    }
+    .delivery-desc {
+        font-size: 12px;
+        color: #64748B;
+        line-height: 1.5;
+        margin-bottom: 12px;
+    }
+    .delivery-meta {
+        font-size: 11px;
+        color: #94A3B8;
+        margin-bottom: 14px;
+    }
+
+    /* 统一按钮质感 */
+    .stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%) !important;
+        border: none !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+    }
+    .stButton button[kind="primary"]:hover {
+        box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # 侧边栏：系统运行环境与智库档案
 with st.sidebar:
@@ -72,7 +233,6 @@ with st.sidebar:
         st.caption(f"智库已永久归档 {len(archive_md_files)} 项战略课题：")
         for f in archive_md_files[:6]:
             clean_title = f.stem
-            # 格式例如 20261022_123900_课题名称
             parts = clean_title.split("_", 2)
             if len(parts) == 3:
                 date_tag = parts[0]
@@ -88,38 +248,61 @@ with st.sidebar:
         st.caption("暂无归档，每次研究交付后将自动在此沉淀。")
 
 
-# 主界面 Header 区域（4A 咨询风格）
-st.markdown("### Insight Synthesis Studio · 战略研究智能体")
-st.caption("顶级 4A 咨询交付标准 · 双阶段广度情报探测与深度战略研判 · 自动交付 Markdown、Word、16:9 商业演示幻灯片与 300 DPI 趋势图表")
+# 4A 咨询级 Executive Hero Header
+st.markdown("""
+<div class="hero-container">
+    <div class="hero-tag">Autonomous Strategic Intelligence · V2.4</div>
+    <div class="hero-title">Insight Synthesis Studio · 战略研究智能体</div>
+    <div class="hero-desc">
+        专为企业高管与战略咨询打造的自动化研究智能体 · 融合双阶段广度情报侦测与深度战略研判 · 自动交付专业 Word 文档、16:9 商业演示幻灯片、300 DPI 趋势图表及 Markdown 简报。
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# 4A 平台能力 KPI 概览指标行（4 列卡片容器）
-col_m1, col_m2, col_m3, col_m4 = st.columns(4, border=True)
+# 4A 平台能力 KPI 概览指标行（杂志级三段式排版）
+k1, k2, k3, k4 = st.columns(4)
 
-with col_m1:
-    st.caption("推理大脑")
-    st.markdown("**DeepSeek-V3 / Flash**")
-    st.caption("低延迟战略大模型矩阵")
+with k1:
+    st.markdown("""
+    <div class="kpi-card">
+        <div class="kpi-label">Inference Engine</div>
+        <div class="kpi-value">DeepSeek-V3</div>
+        <div class="kpi-sub">低延迟高吞吐推理矩阵</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col_m2:
-    st.caption("协同架构")
-    st.markdown("**Two-Stage Pipeline**")
-    st.caption("Scout 探测 + Analyst 研判")
+with k2:
+    st.markdown("""
+    <div class="kpi-card">
+        <div class="kpi-label">Agent Pipeline</div>
+        <div class="kpi-value">Two-Stage Flow</div>
+        <div class="kpi-sub">Scout 探测 + Analyst 研判</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col_m3:
-    st.caption("自愈护栏")
-    st.markdown("**Quality Gate 2.0**")
-    st.caption("信源密度与反幻觉核查")
+with k3:
+    st.markdown("""
+    <div class="kpi-card">
+        <div class="kpi-label">Quality Assurance</div>
+        <div class="kpi-value">Gate 2.0</div>
+        <div class="kpi-sub">双信源抗幻觉质检把关</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col_m4:
-    st.caption("交付矩阵")
-    st.markdown("**4 维全格式产物**")
-    st.caption("Word · 16:9 PPT · 300DPI · MD")
+with k4:
+    st.markdown("""
+    <div class="kpi-card">
+        <div class="kpi-label">Deliverable Matrix</div>
+        <div class="kpi-value">4 Formats</div>
+        <div class="kpi-sub">Word · 16:9 PPT · 图表 · MD</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.write("")
 
 # 课题设定与任务启动卡片
 with st.container(border=True):
-    st.markdown("#### 战略研究课题设定")
+    st.markdown("#### 🎯 战略研究课题设定")
 
     preset_topics = [
         "2026年企业级大模型微调与 RAG 架构的选型平衡与落地实践",
@@ -128,7 +311,7 @@ with st.container(border=True):
         "具身智能机器人软硬件协同体系与高保真物理仿真训练发展趋势"
     ]
 
-    st.markdown("**标杆研究课题推荐**")
+    st.markdown("**标杆战略研究范例推荐（点击快速装载）**")
     selected_preset = st.pills(
         label="推荐标杆课题",
         options=preset_topics,
@@ -207,7 +390,7 @@ latest_chart_path = Path("reports/research_report_chart.png")
 
 if latest_md_path.exists():
     st.divider()
-    st.markdown("### 战略研究交付成果看板")
+    st.markdown("### 📊 战略研究交付成果看板")
 
     tab_md, tab_chart, tab_pptx, tab_download, tab_history = st.tabs([
         "战略简报 (Markdown)",
@@ -258,16 +441,22 @@ if latest_md_path.exists():
                         st.error(f"无法打开应用: {e}")
 
     with tab_download:
-        st.markdown("#### 一键获取多格式交付物包")
+        st.markdown("#### 📦 一键获取多格式交付物包")
         st.caption("所有文件均采用国际 4A 咨询机构标准排版与色彩规范，可直接用于高管汇报或印刷")
 
-        col_d1, col_d2, col_d3, col_d4 = st.columns(4, border=True)
+        col_d1, col_d2, col_d3, col_d4 = st.columns(4)
 
         with col_d1:
-            st.markdown("**:material/description: Word 研报**")
-            st.caption("格式：.docx 完整战略研报")
+            docx_size = f"{latest_docx_path.stat().st_size / 1024:.1f} KB" if latest_docx_path.exists() else "准备中"
+            st.markdown(f"""
+            <div class="delivery-card">
+                <div class="delivery-badge badge-word">Word 文档</div>
+                <div class="delivery-title">完整战略研报</div>
+                <div class="delivery-desc">排版遵循国际管理咨询规范，适合全员研读与细化批注。</div>
+                <div class="delivery-meta">格式: .docx · 体积: {docx_size}</div>
+            </div>
+            """, unsafe_allow_html=True)
             if latest_docx_path.exists():
-                st.caption(f"大小: {latest_docx_path.stat().st_size / 1024:.1f} KB")
                 with open(latest_docx_path, "rb") as f:
                     st.download_button(
                         label="下载 Word 研报",
@@ -278,14 +467,18 @@ if latest_md_path.exists():
                         icon=":material/download:",
                         width="stretch"
                     )
-            else:
-                st.caption("生成中...")
 
         with col_d2:
-            st.markdown("**:material/slideshow: 商业演示文稿**")
-            st.caption("格式：16:9 .pptx 宽屏幻灯片")
+            pptx_size = f"{latest_pptx_path.stat().st_size / 1024:.1f} KB" if latest_pptx_path.exists() else "准备中"
+            st.markdown(f"""
+            <div class="delivery-card">
+                <div class="delivery-badge badge-ppt">PPT 幻灯片</div>
+                <div class="delivery-title">16:9 商业演示文稿</div>
+                <div class="delivery-desc">专为董事会及高管汇报定制的 16:9 宽屏结构化母版。</div>
+                <div class="delivery-meta">格式: .pptx · 体积: {pptx_size}</div>
+            </div>
+            """, unsafe_allow_html=True)
             if latest_pptx_path.exists():
-                st.caption(f"大小: {latest_pptx_path.stat().st_size / 1024:.1f} KB")
                 with open(latest_pptx_path, "rb") as f:
                     st.download_button(
                         label="下载 16:9 PPTX",
@@ -296,31 +489,18 @@ if latest_md_path.exists():
                         icon=":material/download:",
                         width="stretch"
                     )
-            else:
-                st.caption("生成中...")
 
         with col_d3:
-            st.markdown("**:material/article: Markdown 简报**")
-            st.caption("格式：.md 结构化文本")
-            if latest_md_path.exists():
-                st.caption(f"大小: {latest_md_path.stat().st_size / 1024:.1f} KB")
-                with open(latest_md_path, "rb") as f:
-                    st.download_button(
-                        label="下载 Markdown",
-                        data=f,
-                        file_name=latest_md_path.name,
-                        mime="text/markdown",
-                        icon=":material/download:",
-                        width="stretch"
-                    )
-            else:
-                st.caption("生成中...")
-
-        with col_d4:
-            st.markdown("**:material/monitoring: 量化趋势图表**")
-            st.caption("格式：.png 300 DPI 高清原图")
+            chart_size = f"{latest_chart_path.stat().st_size / 1024:.1f} KB" if latest_chart_path.exists() else "准备中"
+            st.markdown(f"""
+            <div class="delivery-card">
+                <div class="delivery-badge badge-chart">高清图表</div>
+                <div class="delivery-title">300 DPI 发展趋势图</div>
+                <div class="delivery-desc">采用 Matplotlib 印刷级引擎渲染的行业量化多指标曲线。</div>
+                <div class="delivery-meta">格式: .png · 体积: {chart_size}</div>
+            </div>
+            """, unsafe_allow_html=True)
             if latest_chart_path.exists():
-                st.caption(f"大小: {latest_chart_path.stat().st_size / 1024:.1f} KB")
                 with open(latest_chart_path, "rb") as f:
                     st.download_button(
                         label="下载高清图表",
@@ -330,8 +510,27 @@ if latest_md_path.exists():
                         icon=":material/download:",
                         width="stretch"
                     )
-            else:
-                st.caption("生成中...")
+
+        with col_d4:
+            md_size = f"{latest_md_path.stat().st_size / 1024:.1f} KB" if latest_md_path.exists() else "准备中"
+            st.markdown(f"""
+            <div class="delivery-card">
+                <div class="delivery-badge badge-md">Markdown 简报</div>
+                <div class="delivery-title">结构化知识简报</div>
+                <div class="delivery-desc">便于一键导入企业知识库、Notion、飞书或沉淀进 Git 仓库。</div>
+                <div class="delivery-meta">格式: .md · 体积: {md_size}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            if latest_md_path.exists():
+                with open(latest_md_path, "rb") as f:
+                    st.download_button(
+                        label="下载 Markdown",
+                        data=f,
+                        file_name=latest_md_path.name,
+                        mime="text/markdown",
+                        icon=":material/download:",
+                        width="stretch"
+                    )
 
     with tab_history:
         st.markdown("#### 历史战略课题档案库检索")
