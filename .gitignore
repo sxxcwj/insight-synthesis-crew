@@ -16,4 +16,4 @@ reports/
 flow_plot.html
 .agents/
 .claude/
-
+bin/
