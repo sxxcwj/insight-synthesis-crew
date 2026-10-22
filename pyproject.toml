@@ -1,0 +1,11 @@
+[project]
+name = "craw"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "crewai[google-genai]>=0.100.0",
+    "crewai-tools>=0.30.0",
+    "python-dotenv>=1.2.4",
+    "duckduckgo-search>=7.0.0",
+]

@@ -1,0 +1,22 @@
+# config/tasks.yaml
+broad_research_task:
+  description: >
+    针对议题【{topic}】开展阶段一的广度搜集：
+    1. 搜索核心发展背景、关键参与方与最新里程碑进展。
+    2. 搜集至少 3-5 个不同来源的关键客观数据或论据支撑。
+    3. 严格提取并保留每个事实点的原始真实来源（包括发布机构、报告/论文名称及完整可访问的网页链接 URL）。
+  expected_output: >
+    包含核心事实、量化指标及对应完整引用链接（URL）的 Markdown 整理清单。
+  agent: scout_researcher
+
+deep_analysis_task:
+  description: >
+    基于阶段一搜集到的事实清单：
+    1. 交叉比对不同来源数据，识别潜在矛盾点或偏见。
+    2. 提炼出 3 个核心机遇洞察与 2 个潜在风险挑战。
+    3. 给出具备可操作性的前瞻性战略建议。
+    4. 必须完整整理并列出报告中引用的所有一手文献、官方通告与网页链接（包含机构名称、完整 URL 以及对应支撑的数据），绝不能遗漏。
+  expected_output: >
+    一份排版严密、逻辑闭环的高层研究洞察简报，末尾包含完整的引用来源清单（符合 FinalResearchReport 结构）。
+  agent: synthesis_analyst
+
