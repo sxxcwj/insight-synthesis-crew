@@ -15,6 +15,14 @@ def run():
     args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
     use_flow = "--flow" in sys.argv
     do_plot = "--plot" in sys.argv
+    do_ui = "--ui" in sys.argv or "--web" in sys.argv
+
+    if do_ui:
+        import subprocess
+        print("🌐 启动 Insight Synthesis Studio 交互式战略研究控制台...")
+        app_file = str(Path(__file__).resolve().parent / "app.py")
+        subprocess.run(["streamlit", "run", app_file])
+        return
 
     topic = (
         args[0]

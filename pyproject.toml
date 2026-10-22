@@ -12,4 +12,5 @@ dependencies = [
     "duckduckgo-search>=7.0.0",
     "python-pptx>=1.0.0",
     "matplotlib>=3.11.2",
+    "streamlit>=1.66.1",
 ]

@@ -5,17 +5,20 @@
   <a href="https://crewai.com/"><img src="https://img.shields.io/badge/CrewAI-Multi--Agent-orange.svg" alt="Framework" /></a>
   <a href="https://www.deepseek.com/"><img src="https://img.shields.io/badge/LLM-DeepSeek--V4.1--Flash-blueviolet.svg" alt="LLM" /></a>
   <a href="https://serper.dev/"><img src="https://img.shields.io/badge/Search-Google%20Serper-orange" alt="Search Engine" /></a>
+  <a href="https://streamlit.io/"><img src="https://img.shields.io/badge/WebUI-Streamlit%20Studio-red.svg" alt="Streamlit WebUI" /></a>
   <a href="https://matplotlib.org/"><img src="https://img.shields.io/badge/Visuals-300%20DPI%20Charts-blue.svg" alt="Data Charts" /></a>
-  <a href="https://github.com/scanny/python-pptx"><img src="https://img.shields.io/badge/Slides-16%3A9%20PPTX-red.svg" alt="PPTX Export" /></a>
+  <a href="https://github.com/scanny/python-pptx"><img src="https://img.shields.io/badge/Slides-16%3A9%20PPTX-blueviolet.svg" alt="PPTX Export" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" /></a>
 </p>
 
-**Insight Synthesis Crew** 是一个基于 **CrewAI** 与 **DeepSeek-V4.1-Flash** 构建的**两阶段协同深度研究与全格式报告合成系统**。系统通过模拟专业咨询机构的分工机制，将“广度情报搜集与多源交叉验证”与“深度逻辑综合与咨询级文档排版”解耦，内置自愈式质量门禁（Quality Gate），支持一键全自动生成高可读 Markdown、内嵌高清图表的商务级 Word (`.docx`) 及 16:9 咨询级宽屏 PowerPoint (`.pptx`) 汇报演示文稿。
+**Insight Synthesis Crew** 是一个基于 **CrewAI** 与 **DeepSeek-V4.1-Flash** 构建的**两阶段协同深度研究与全格式报告合成系统**。系统通过模拟专业咨询机构的分工机制，将“广度情报搜集与多源交叉验证”与“深度逻辑综合与咨询级文档排版”解耦，内置自愈式质量门禁（Quality Gate），配备交互式 Web 控制台，支持一键全自动生成高可读 Markdown、内嵌高清图表的商务级 Word (`.docx`) 及 16:9 咨询级宽屏 PowerPoint (`.pptx`) 汇报演示文稿。
 
 ---
 
 ## ✨ 核心特性
 
+- **🌐 交互式 Web 控制台（Insight Synthesis Studio）**
+  - 提供开箱即用的现代化商务界面，支持一键加载精选标杆课题、实时流式查看双阶段研究进展、在线预览 300 DPI 趋势图表及一键打包下载全套产物。
 - **🔄 两阶段智能体协同架构（Two-Stage Pipeline）**
   - **第一阶段（广度检索与去噪核验）**：情报检索智能体聚焦多维度信息挖掘、关键客观量化数据提取、事实交叉核验与信源记录，输出高信息密度的结构化研究底稿。
   - **第二阶段（洞察合成与咨询级撰稿）**：首席主笔智能体基于核验后的底稿，提炼核心商业/学术洞察与关键指标序列，按麦肯锡金字塔原理完成深度报告撰写与结构化排版。
@@ -38,7 +41,7 @@
 
 ```mermaid
 graph LR
-    A[用户输入研究课题] --> B(Stage 1: 深度情报搜集 Agent)
+    A[Web 端 / 终端输入研究课题] --> B(Stage 1: 深度情报搜集 Agent)
     B --> C{质量门禁 & 事实核验}
     C -- 信息不足/补充检索 --> B
     C -- 核验通过 --> D[结构化研究底稿]
@@ -49,6 +52,9 @@ graph LR
     G --> H[优雅 Markdown 报告]
     G --> I[图文并茂 Word .docx 报告]
     G --> J[16:9 宽屏 PPT .pptx 演示文稿]
+    H --> K[Web 端在线看板与一键下载]
+    I --> K
+    J --> K
 ```
 
 ### 最小权限隔离与安全设计原则（Least Privilege）
@@ -83,6 +89,7 @@ graph LR
      │  1. Markdown 优雅排版 (含图表相对链接)                  │
      │  2. 商务级排版 Word (.docx，嵌入 300 DPI 图表并唤起)   │
      │  3. 16:9 宽屏 PPT (.pptx，含图文对照幻灯片并唤起)      │
+     │  4. 交互式 Web 控制台 (在线看板、图表直显与打包下载)    │
      └────────────────────────────────────────────────────────┘
 ```
 
@@ -120,6 +127,7 @@ graph LR
 │   └── test_export.py        # Word/PPTX/图表全格式离线导出与渲染自动化测试
 ├── .env.example              # 环境变量与 API 密钥模版 (已脱敏)
 ├── LICENSE                   # MIT 开源许可证
+├── app.py                    # 🌐 Streamlit 交互式 Web 控制台
 ├── main.py                   # 命令行多模式统一运行入口
 └── pyproject.toml            # uv 依赖管理配置
 ```
@@ -162,20 +170,28 @@ uv run python tests/test_export.py
 
 ### 3. 执行研究任务
 
-系统支持三种执行模式：
+系统支持多种执行模式：
 
-#### 模式 A：自愈质检 Flow 模式（推荐 · 生产环境首选）
+#### 模式 A：交互式 Web 战略控制台（推荐 · 最佳视觉与交互体验）
+启动本地 Web 工作台，在浏览器中直观输入课题、实时查看日志并一键下载所有交付物：
+```bash
+uv run python main.py --ui
+# 或者直接启动
+uv run streamlit run app.py
+```
+
+#### 模式 B：自愈质检 Flow 模式（终端命令行首选）
 阶段一采集信息后自动执行门禁质检，不合格自动重试，完成后**自动将全套交付物（MD / Word / 16:9 PPTX / 高清图表）归档至 `reports/archive/` 并自动唤起系统对应应用直接打开查阅**：
 ```bash
 uv run python main.py --flow "2026年企业级大模型微调与 RAG 架构的选型平衡"
 ```
 
-#### 模式 B：标准两阶段 Crew 线性执行
+#### 模式 C：标准两阶段 Crew 线性执行
 ```bash
 uv run python main.py "2026年全球半导体先进制程与封装技术的演进格局"
 ```
 
-#### 模式 C：可视化拓扑图生成
+#### 模式 D：可视化拓扑图生成
 ```bash
 uv run python main.py --plot
 # 生成 flow_plot.html，可在浏览器中交互式查阅两阶段路由分支
