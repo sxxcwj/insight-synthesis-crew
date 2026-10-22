@@ -103,7 +103,7 @@ def create_cover_slide(prs, topic: str):
     tf_sub = sub_box.text_frame
     tf_sub.word_wrap = True
     p_sub = tf_sub.paragraphs[0]
-    p_sub.text = "基于两阶段多智能体协作、多源事实交叉核验与前瞻决策推演"
+    p_sub.text = "长伴咨询 · 依据检索底稿整理的研判，请核对来源页中的链接"
     p_sub.font.name = "Microsoft YaHei"
     p_sub.font.size = Pt(13)
     p_sub.font.color.rgb = COLOR_TEXT_MUTED

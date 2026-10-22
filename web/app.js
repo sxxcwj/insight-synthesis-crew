@@ -1,9 +1,15 @@
 /**
- * Insight Synthesis Studio · 4A Executive Client Engine
+ * 长伴 · 战略研究智能体
  */
 
 let selectedMode = 'flow';
 let pollInterval = null;
+let vaultQuery = '';
+
+function isLocalAccess() {
+    const host = (location.hostname || '').toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     initEnv();
@@ -14,32 +20,51 @@ document.addEventListener('DOMContentLoaded', () => {
     checkActiveJob();
 });
 
-// 1. 初始化系统环境与密钥状态
+function paintPill(id, level, text) {
+    const dot = document.querySelector('#' + id + ' .dot');
+    const label = document.querySelector('#' + id + ' .text');
+    if (!dot || !label) return;
+    dot.className = 'dot ' + (level || 'red');
+    label.textContent = text;
+}
+
+function deepseekLabel(data) {
+    const name = data.model_label || '模型';
+    if (!data.deepseek || !data.deepseek.configured) return '推理服务未配置';
+    if (data.deepseek.reachable) return name + ' · 可连通';
+    return name + ' · 无法连通';
+}
+
+function searchLabel(section) {
+    if (!section || !section.configured) return '搜索引擎未配置';
+    if (section.reachable) return '搜索引擎 · 可连通';
+    return '搜索引擎 · 无法连通';
+}
+
+// 1. 读取实际模型名，以及 DeepSeek / 搜索引擎是否已配置、能否连通
 async function initEnv() {
     try {
-        const res = await fetch('/api/env-status');
-        const data = await res.json();
-        
-        const deepseekDot = document.querySelector('#deepseekStatus .dot');
-        const deepseekText = document.querySelector('#deepseekStatus .text');
-        if (data.deepseek_ready) {
-            deepseekDot.className = 'dot green';
-            deepseekText.textContent = 'DeepSeek-V3 [READY]';
-        } else {
-            deepseekDot.className = 'dot red';
-            deepseekText.textContent = 'DEEPSEEK [MISSING]';
+        const res = await fetch('/api/status');
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
         }
-
-        const searchDot = document.querySelector('#searchStatus .dot');
-        const searchText = document.querySelector('#searchStatus .text');
-        if (data.serper_ready) {
-            searchDot.className = 'dot green';
-            searchText.textContent = 'Google Serper [READY]';
-        } else {
-            searchDot.className = 'dot blue';
-            searchText.textContent = 'Web Crawler [ACTIVE]';
+        const data = await res.json();
+        paintPill('deepseekStatus', data.deepseek && data.deepseek.level, deepseekLabel(data));
+        paintPill('searchStatus', data.search && data.search.level, searchLabel(data.search));
+        const modelEl = document.getElementById('kpiModelName');
+        if (modelEl) {
+            modelEl.textContent = data.model_label || '未配置';
+        }
+        const note = document.getElementById('redactionNote');
+        if (note) {
+            note.textContent = data.redaction_enabled
+                ? '外发脱敏已开启：手机号、身份证号、邮箱、银行卡号和已配置的客户企业名称会先换成占位符。'
+                : '外发脱敏已关闭。课题会原样送去检索和模型。';
         }
     } catch (err) {
+        paintPill('deepseekStatus', 'red', '状态读取失败');
+        paintPill('searchStatus', 'red', '状态读取失败');
         console.error('Failed to init env:', err);
     }
 }
@@ -80,8 +105,11 @@ function initActions() {
         }
     });
 
-    // PPT 直接调用
+    // 只有通过本机地址打开页面时才提供“在 PPT 中打开”
     const btnOpenPptx = document.getElementById('btnOpenPptx');
+    if (!isLocalAccess()) {
+        btnOpenPptx.hidden = true;
+    }
     btnOpenPptx.addEventListener('click', async () => {
         try {
             btnOpenPptx.textContent = '唤起中...';
@@ -127,6 +155,11 @@ function initActions() {
     });
     closeVaultBtn.addEventListener('click', () => {
         vaultModal.classList.remove('active');
+    });
+    const vaultSearch = document.getElementById('vaultSearch');
+    vaultSearch.addEventListener('input', () => {
+        vaultQuery = vaultSearch.value.trim();
+        loadArchives();
     });
 
     // 复制全文
@@ -238,10 +271,10 @@ function updatePipelineUI(job) {
 
     const statusTextMap = {
         'idle': '系统就绪',
-        'scout': '阶段一 (Scout): 全网广度情报检索与去噪...',
-        'gate': '阶段二 (Gate): 质量门禁抗幻觉核查...',
-        'analyst': '阶段三 (Analyst): 深度战略推演与洞察提炼...',
-        'multimodal': '阶段四 (Multimodal): 编译 Word、16:9 PPT 与高清图表...',
+        'scout': '检索员正在搜集公开资料并保留来源链接...',
+        'gate': '质量门禁：正在检查链接数量和篇幅...',
+        'analyst': '分析员正在根据检索底稿整理判断...',
+        'multimodal': '正在整理 Word、幻灯片、图表和 Markdown...',
         'done': '全流程完成：多模态战略交付物已全部生成！',
         'error': '运行异常中断'
     };
@@ -342,26 +375,56 @@ async function loadArchives() {
     list.innerHTML = '<div class="loading-spinner">正在调取档案数据...</div>';
 
     try {
-        const res = await fetch('/api/archives');
+        const res = await fetch('/api/archives?q=' + encodeURIComponent(vaultQuery));
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
         const data = await res.json();
 
         if (!data.archives || data.archives.length === 0) {
-            list.innerHTML = '<div class="empty-state">智库暂无历史研报档案</div>';
+            list.innerHTML = '<div class="empty-state">' + (vaultQuery ? '没有匹配的历史课题' : '智库暂无历史研报档案') + '</div>';
             return;
         }
 
         list.innerHTML = data.archives.map(item => `
-            <div class="vault-item" onclick="openArchive('${item.filename}')">
+            <div class="vault-item" onclick="openArchive('${encodeURIComponent(item.filename)}')">
                 <div>
                     <div class="vault-topic">${escapeHtml(item.topic)}</div>
-                    <div class="vault-meta">日期: ${item.date} · 文件体积: ${item.size_kb} KB</div>
+                    <div class="vault-meta">日期: ${escapeHtml(item.date)} · 文件体积: ${item.size_kb} KB</div>
                 </div>
-                <button class="read-md-btn">调取研报</button>
+                <div class="vault-actions">
+                    <button type="button" class="read-md-btn">调取研报</button>
+                    <button type="button" class="danger-btn" onclick="deleteArchive(event, '${encodeURIComponent(item.filename)}')">删除</button>
+                </div>
             </div>
         `).join('');
 
     } catch (e) {
-        list.innerHTML = '<div class="empty-state">读取档案失败: ' + e + '</div>';
+        list.innerHTML = '<div class="empty-state">读取档案失败: ' + escapeHtml(String(e)) + '</div>';
+    }
+}
+
+async function deleteArchive(event, filename) {
+    event.stopPropagation();
+    const decoded = decodeURIComponent(filename);
+    if (!confirm('确认删除这条历史课题？对应的 Word、幻灯片、图表和 Markdown 会一起删除，且不能恢复。')) {
+        return;
+    }
+    try {
+        const res = await fetch('/api/archives/' + filename, { method: 'DELETE' });
+        if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert('删除失败: ' + (err.detail || res.status));
+            return;
+        }
+        loadArchives();
+    } catch (e) {
+        alert('删除失败: ' + e);
     }
 }
 

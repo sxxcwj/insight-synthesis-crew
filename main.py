@@ -11,7 +11,9 @@ from craw.flow import AdvancedTwoStageFlow
 
 
 def run():
-    """执行两阶段协同研究：支持标准 Crew 模式与自愈 Flow 模式"""
+    """执行两阶段协同研究：支持标准 Crew 模式与门禁重试 Flow 模式"""
+    from craw.redact import redact_text
+
     args = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
     use_flow = "--flow" in sys.argv
     do_plot = "--plot" in sys.argv
@@ -19,7 +21,8 @@ def run():
 
     if do_ui:
         import subprocess
-        print("🌐 启动 Insight Synthesis Studio 交互式战略研究控制台...")
+        print("启动长伴 · 战略研究智能体控制台...")
+        print("浏览器界面请优先使用: uv run python server.py  然后打开 http://127.0.0.1:8000")
         app_file = str(Path(__file__).resolve().parent / "app.py")
         subprocess.run(["streamlit", "run", app_file])
         return
@@ -27,8 +30,12 @@ def run():
     topic = (
         args[0]
         if args
-        else "2025-2026年自主智能体（AI Agents）在企业级软件系统中的落地瓶颈与演进趋势"
+        else "制造业薪酬体系对标与调薪策略"
     )
+    redacted = redact_text(topic)
+    if redacted != topic:
+        print("课题中的手机号、身份证号、邮箱、银行卡号或客户企业名称已替换为占位符。")
+    topic = redacted
 
     if do_plot:
         print("📊 正在生成 Flow 工作流结构图 (flow_plot.html)...")
@@ -39,7 +46,7 @@ def run():
 
     if use_flow:
         print("=" * 60)
-        print(f"🔄 启动【自愈 Flow 模式】两阶段工作流: {topic}")
+        print(f"启动【门禁重试 Flow】两阶段工作流: {topic}")
         print("=" * 60)
         flow = AdvancedTwoStageFlow()
         flow.state.topic = topic

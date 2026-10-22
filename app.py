@@ -15,9 +15,16 @@ src_dir = Path(__file__).resolve().parent / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-# 4A 战略咨询页面配置
+from craw.runtime_status import display_model_name, resolve_models
+
+_scout_model, _analyst_model = resolve_models()
+_model_label = display_model_name(_scout_model)
+if _analyst_model != _scout_model:
+    _model_label = f"{display_model_name(_scout_model)} / {display_model_name(_analyst_model)}"
+
+# 长伴咨询页面配置
 st.set_page_config(
-    page_title="Insight Synthesis Studio · 战略研究智能体",
+    page_title="长伴 · 战略研究智能体",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -187,7 +194,7 @@ st.markdown("""
 # 侧边栏：系统运行环境与智库档案
 with st.sidebar:
     st.markdown("### 战略中枢控制台")
-    st.caption("Insight Synthesis Studio · 4A 咨询交付标准")
+    st.caption("长伴咨询 · 战略研究智能体")
 
     # API 与环境就绪状态徽章
     deepseek_key = os.getenv("DEEPSEEK_API_KEY", "")
@@ -195,14 +202,14 @@ with st.sidebar:
 
     st.markdown("**系统就绪指标**")
     if deepseek_key:
-        st.badge("DeepSeek API: 已就绪", icon=":material/check_circle:", color="green")
+        st.badge("DeepSeek 密钥已填写", icon=":material/check_circle:", color="green")
     else:
-        st.badge("DEEPSEEK_API_KEY: 未配置", icon=":material/error:", color="red")
+        st.badge("DeepSeek 密钥未配置", icon=":material/error:", color="red")
 
     if serper_key:
-        st.badge("Google 搜索 (Serper): 已就绪", icon=":material/search:", color="green")
+        st.badge("搜索引擎密钥已填写", icon=":material/search:", color="green")
     else:
-        st.badge("网络抓取引擎: 纯抓取模式", icon=":material/public:", color="blue", help="Serper API 未配置时，系统将使用直接网页抓取")
+        st.badge("搜索引擎密钥未配置", icon=":material/error:", color="red")
 
     st.divider()
 
@@ -210,13 +217,13 @@ with st.sidebar:
     st.markdown("**研究编排引擎架构**")
     exec_mode = st.segmented_control(
         label="选择编排模式",
-        options=["Flow 自愈质检", "Crew 标准流程"],
-        default="Flow 自愈质检",
+        options=["Flow 门禁重试", "Crew 标准流程"],
+        default="Flow 门禁重试",
         selection_mode="single",
         label_visibility="collapsed"
     )
-    if exec_mode == "Flow 自愈质检":
-        st.caption("🛡️ **Flow 模式**: 配备两阶段质量门禁与自愈校验，自动把关数据深度与信源密度。")
+    if exec_mode == "Flow 门禁重试":
+        st.caption("Flow 模式会检查检索底稿是否至少有 2 个链接、且不少于 250 字；不足时重试检索，最多 2 次。这不核验事实真伪。")
     else:
         st.caption("⚡ **Crew 模式**: 标准流水线，执行速度快，适合敏捷概念探索。")
 
@@ -251,10 +258,10 @@ with st.sidebar:
 # 4A 咨询级 Executive Hero Header
 st.markdown("""
 <div class="hero-container">
-    <div class="hero-tag">Autonomous Strategic Intelligence · V2.4</div>
-    <div class="hero-title">Insight Synthesis Studio · 战略研究智能体</div>
+    <div class="hero-tag">长伴咨询 · 人力资源战略研究</div>
+    <div class="hero-title">长伴 · 战略研究智能体</div>
     <div class="hero-desc">
-        专为企业高管与战略咨询打造的自动化研究智能体 · 融合双阶段广度情报侦测与深度战略研判 · 自动交付专业 Word 文档、16:9 商业演示幻灯片、300 DPI 趋势图表及 Markdown 简报。
+        面向人力资源课题的研究助手。检索员收集公开资料并保留链接，分析员据此整理判断，并交付 Word、幻灯片、趋势图和 Markdown。
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -263,37 +270,37 @@ st.markdown("""
 k1, k2, k3, k4 = st.columns(4)
 
 with k1:
-    st.markdown("""
+    st.markdown(f"""
     <div class="kpi-card">
-        <div class="kpi-label">Inference Engine</div>
-        <div class="kpi-value">DeepSeek-V3</div>
-        <div class="kpi-sub">低延迟高吞吐推理矩阵</div>
+        <div class="kpi-label">推理模型</div>
+        <div class="kpi-value">{_model_label}</div>
+        <div class="kpi-sub">以环境变量和 agents.yaml 为准</div>
     </div>
     """, unsafe_allow_html=True)
 
 with k2:
     st.markdown("""
     <div class="kpi-card">
-        <div class="kpi-label">Agent Pipeline</div>
-        <div class="kpi-value">Two-Stage Flow</div>
-        <div class="kpi-sub">Scout 探测 + Analyst 研判</div>
+        <div class="kpi-label">协同流程</div>
+        <div class="kpi-value">两阶段</div>
+        <div class="kpi-sub">检索员 + 分析员</div>
     </div>
     """, unsafe_allow_html=True)
 
 with k3:
     st.markdown("""
     <div class="kpi-card">
-        <div class="kpi-label">Quality Assurance</div>
-        <div class="kpi-value">Gate 2.0</div>
-        <div class="kpi-sub">双信源抗幻觉质检把关</div>
+        <div class="kpi-label">质量门禁</div>
+        <div class="kpi-value">链接与篇幅</div>
+        <div class="kpi-sub">不足时重试检索，最多 2 次</div>
     </div>
     """, unsafe_allow_html=True)
 
 with k4:
     st.markdown("""
     <div class="kpi-card">
-        <div class="kpi-label">Deliverable Matrix</div>
-        <div class="kpi-value">4 Formats</div>
+        <div class="kpi-label">交付成果</div>
+        <div class="kpi-value">四种文件</div>
         <div class="kpi-sub">Word · 16:9 PPT · 图表 · MD</div>
     </div>
     """, unsafe_allow_html=True)
@@ -305,10 +312,10 @@ with st.container(border=True):
     st.markdown("#### 🎯 战略研究课题设定")
 
     preset_topics = [
-        "2026年企业级大模型微调与 RAG 架构的选型平衡与落地实践",
-        "低空经济在城市物流与垂直起降（eVTOL）场景的商业化演进格局",
-        "全球半导体先进制程（2nm/GAA）与先进制程封装技术的竞争态势",
-        "具身智能机器人软硬件协同体系与高保真物理仿真训练发展趋势"
+        "制造业薪酬体系对标与调薪策略",
+        "中层干部梯队建设与继任计划",
+        "绩效考核体系从 KPI 向 OKR 过渡",
+        "劳动用工合规风险排查与整改",
     ]
 
     st.markdown("**标杆战略研究范例推荐（点击快速装载）**")
@@ -320,10 +327,10 @@ with st.container(border=True):
     )
 
     topic_query = st.text_input(
-        label="输入产业、商业或技术研究课题",
+        label="输入人力资源研究课题",
         value=selected_preset if selected_preset else "",
-        placeholder="例如：2026年中国人形机器人核心零部件供应链与商业落地前景",
-        help="支持输入任何前沿技术、商业模式、产业分析或战略咨询课题"
+        placeholder="例如：制造业薪酬体系对标与调薪策略",
+        help="送去检索和模型前，会默认隐去手机号、身份证号、邮箱、银行卡号和已配置的客户企业名称"
     )
 
     col_btn_l, col_btn_r = st.columns([3, 1])
@@ -350,17 +357,21 @@ if start_btn:
             st.write("🔎 **阶段一 (Scout)**: 正在执行全网广度情报检索、量化指标采集与去噪...")
 
             try:
-                if "Flow" in (exec_mode or "Flow 自愈质检"):
+                from craw.redact import redact_text
+                safe_topic = redact_text(topic_query.strip())
+                if safe_topic != topic_query.strip():
+                    st.info("课题中的联系方式和已配置客户名称已替换为占位符后再送去检索和模型。")
+                if "Flow" in (exec_mode or "Flow 门禁重试"):
                     from craw.flow import AdvancedTwoStageFlow
                     flow_inst = AdvancedTwoStageFlow()
-                    flow_inst.state.topic = topic_query.strip()
+                    flow_inst.state.topic = safe_topic
                     flow_inst.kickoff()
                 else:
                     from craw.crew import TwoStageResearchCrew
                     crew_obj = TwoStageResearchCrew().crew()
-                    crew_obj.kickoff(inputs={"topic": topic_query.strip()})
+                    crew_obj.kickoff(inputs={"topic": safe_topic})
 
-                st.write("📊 **阶段二 (Analyst)**: 战略分析完成，双阶段质量门禁核查通过。")
+                st.write("分析员已根据检索底稿整理判断。")
                 st.write("📈 **多模态图表**: 300 DPI 商业咨询趋势图表已渲染生成。")
                 st.write("📄 **全套交付成果**: Word (.docx)、16:9 PPT (.pptx) 与 Markdown 均已归档并同步！")
 
@@ -408,7 +419,7 @@ if latest_md_path.exists():
         if latest_chart_path.exists():
             st.image(
                 str(latest_chart_path),
-                caption="4A 咨询标准 · 关键量化发展趋势图表 (300 DPI 高分辨率渲染)",
+                caption="报告中的量化字段绘图，请与引用来源核对",
                 width="stretch"
             )
             chart_size_kb = latest_chart_path.stat().st_size / 1024
@@ -442,7 +453,7 @@ if latest_md_path.exists():
 
     with tab_download:
         st.markdown("#### 📦 一键获取多格式交付物包")
-        st.caption("所有文件均采用国际 4A 咨询机构标准排版与色彩规范，可直接用于高管汇报或印刷")
+        st.caption("Word 和 Markdown 文末列有引用来源链接，请在使用前核对。")
 
         col_d1, col_d2, col_d3, col_d4 = st.columns(4)
 
