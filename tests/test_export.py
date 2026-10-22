@@ -1,7 +1,12 @@
+import sys
 import tempfile
 from pathlib import Path
 from pptx import Presentation
 import docx
+
+src_path = str(Path(__file__).resolve().parent.parent / "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
 from craw.export_docx import get_report_paths, export_markdown_to_docx
 from craw.export_pptx import export_report_to_pptx

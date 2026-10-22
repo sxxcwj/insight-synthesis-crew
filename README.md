@@ -1,4 +1,4 @@
-# Insight Synthesis Crew | 深度研究与咨询级报告合成智能体系统
+# 长伴 · 战略研究智能体
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python Version" /></a>
@@ -11,19 +11,21 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" /></a>
 </p>
 
-**Insight Synthesis Crew** 是一个基于 **CrewAI** 与 **DeepSeek-V4.1-Flash** 构建的**两阶段协同深度研究与全格式报告合成系统**。系统通过模拟专业咨询机构的分工机制，将“广度情报搜集与多源交叉验证”与“深度逻辑综合与咨询级文档排版”解耦，内置自愈式质量门禁（Quality Gate），配备交互式 Web 控制台，支持一键全自动生成高可读 Markdown、内嵌高清图表的商务级 Word (`.docx`) 及 16:9 咨询级宽屏 PowerPoint (`.pptx`) 汇报演示文稿。
+**长伴 · 战略研究智能体** 给山西长伴人力资源有限公司做课题研究。它基于 **CrewAI**，模型名由 `SCOUT_LLM_MODEL` / `ANALYST_LLM_MODEL` 决定，默认是 `deepseek/deepseek-flash`。检索员先搜集公开资料并保留链接，分析员只根据这份底稿整理判断，不再发起公网搜索。Web 控制台可导出 Markdown、Word (`.docx`)、趋势图和 16:9 PowerPoint (`.pptx`)。
+
+质量门禁只做两件事：底稿里至少要有 2 个 `http(s)` 链接，并且不少于 250 字。不满足就重试检索，最多 2 次；仍然不足也会进入分析。它不核验事实真伪，也不能消除模型幻觉。报告文末会列出引用来源和链接，使用前请核对。
 
 ---
 
 ## ✨ 核心特性
 
-- **🌐 交互式 Web 控制台（Insight Synthesis Studio）**
-  - 提供开箱即用的现代化商务界面，支持一键加载精选标杆课题、实时流式查看双阶段研究进展、在线预览 300 DPI 趋势图表及一键打包下载全套产物。
+- **🌐 Web 控制台（长伴 · 战略研究智能体）**
+  - 预置人力资源示范课题，查看两阶段进度，下载 Word、幻灯片、图表和 Markdown。历史课题可按关键词搜索，删除前会二次确认。
 - **🔄 两阶段智能体协同架构（Two-Stage Pipeline）**
   - **第一阶段（广度检索与去噪核验）**：情报检索智能体聚焦多维度信息挖掘、关键客观量化数据提取、事实交叉核验与信源记录，输出高信息密度的结构化研究底稿。
   - **第二阶段（洞察合成与咨询级撰稿）**：首席主笔智能体基于核验后的底稿，提炼核心商业/学术洞察与关键指标序列，按麦肯锡金字塔原理完成深度报告撰写与结构化排版。
-- **🛡️ 自愈式质量门禁（Self-Healing Quality Gate）**
-  - 内置输出质量评估与自动重试/补偿机制，对论据完整性、信源可追溯性及格式合规性进行自动化质检，杜绝大模型“幻觉”与敷衍输出。
+- **🛡️ 链接与篇幅门禁**
+  - 检索底稿不足 2 个链接或不足 250 字时，会重试检索，最多 2 次。这只是篇幅和链接数量检查。
 - **📈 多模态行业图表与数据可视化引擎（Chart Engine）**
   - 自动从研究报告中提炼核心量化指标（如市场规模、年复合增长率、出货量、渗透率），以 300 DPI 高清分辨率绘制 McKinsey / BCG 风格商务折线趋势图与对比柱状图，自动同步内嵌至 Word 与 PPTX。
 - **📊 三位一体咨询交付矩阵（Markdown & Word & 16:9 PPTX）**
@@ -72,14 +74,14 @@ graph LR
                                   │ 结构化事实证据链 & 引用来源清单
                                   ▼
                      【门禁路由质检 Quality Gate】
-                    (信息丰度/来源不足则触发自愈重试)
+                    (链接少于 2 个或篇幅不足 250 字则重试检索)
                                   │ 质检通过
                                   ▼
      ┌────────────────────────────────────────────────────────┐
      │  Phase 2: Analyst Agent (高级战略分析与核验员)         │
      │  • 模型: DeepSeek-V4.1-Flash                           │
      │  • 严格工具隔离: 仅允许本地受控文件读取，阻断公网搜索    │
-     │  • 约束控制: max_iter=5, 消除外网幻觉与发散             │
+     │  • 约束控制: max_iter=5，不挂载公网搜索                 │
      │  • 交付规格: Pydantic 结构化输出 (含趋势图表量化数据)   │
      └────────────────────────────┬───────────────────────────┘
                                   │
@@ -106,10 +108,13 @@ graph LR
 │   └── craw/
 │       ├── __init__.py
 │       ├── crew.py           # CrewBase 编排：Agent 组装、工具受限绑定与 Guardrail
-│       ├── flow.py           # AdvancedTwoStageFlow：带质量门禁自愈重试的工作流
-│       ├── export_docx.py    # 商务级 Word (.docx) 导出引擎与归档路径管理
-│       ├── export_pptx.py    # 16:9 咨询级宽屏 PowerPoint (.pptx) 演示文稿生成引擎
-│       ├── export_charts.py  # 300 DPI 商务咨询图表自动渲染引擎
+│       ├── flow.py           # AdvancedTwoStageFlow：链接与篇幅不足时重试检索
+│       ├── redact.py         # 外发前脱敏：手机号、身份证号、邮箱、银行卡号、客户企业名称
+│       ├── access_auth.py    # 可选访问口令
+│       ├── runtime_status.py # 实际模型名与连通状态
+│       ├── export_docx.py    # Word 导出，文末列出引用来源链接
+│       ├── export_pptx.py    # 16:9 PowerPoint 导出
+│       ├── export_charts.py  # 图表渲染
 │       └── models.py         # Pydantic 报告、量化图表与引用源数据模型
 ├── reports/
 │   ├── archive/              # 📂 历史所有课题全格式永久归档目录 (永不覆盖)
@@ -124,10 +129,15 @@ graph LR
 ├── tests/
 │   ├── test_crew_setup.py    # 工具安全隔离与权限边界自动化测试
 │   ├── test_flow_structure.py# Flow 状态生命周期与路由逻辑验证
-│   └── test_export.py        # Word/PPTX/图表全格式离线导出与渲染自动化测试
+│   ├── test_export.py        # Word/PPTX/图表全格式离线导出与渲染自动化测试
+│   ├── test_redaction.py     # 外发脱敏
+│   ├── test_sources_export.py# 研报引用来源
+│   └── test_api_security.py  # 认证、状态、智库搜索与删除
 ├── .env.example              # 环境变量与 API 密钥模版 (已脱敏)
 ├── LICENSE                   # MIT 开源许可证
-├── app.py                    # 🌐 Streamlit 交互式 Web 控制台
+├── server.py                 # Web 服务：默认 127.0.0.1:8000，提供页面和 /api
+├── web/                      # 控制台页面（index.html / style.css / app.js / login.html）
+├── app.py                    # 可选的 Streamlit 界面
 ├── main.py                   # 命令行多模式统一运行入口
 └── pyproject.toml            # uv 依赖管理配置
 ```
@@ -149,14 +159,39 @@ cd insight-synthesis-crew
 cp .env.example .env
 ```
 
-在 `.env` 中填入您的密钥：
-```env
-# 核心大模型（默认 DeepSeek）
-DEEPSEEK_API_KEY=your_deepseek_api_key
+在 `.env` 中填入密钥和运行参数（示例里的值都是占位符，不要把真实口令提交到仓库）：
 
-# 搜索引擎（阶段一 Google 全网检索，可选，推荐配置）
+```env
+HOST=127.0.0.1
+PORT=8000
+
+# 留空则本机免登录，启动时打印警告。部署到服务器前请设置其中一项。
+# APP_PASSWORD=
+# ACCESS_TOKEN=
+
+# 默认开启。false / off / 0 关闭。
+REDACTION_ENABLED=true
+# REDACTION_CLIENT_NAMES=示例客户制造有限公司
+# REDACTION_CLIENTS_FILE=config/clients.local.txt
+
+DEEPSEEK_API_KEY=your_deepseek_api_key
+SCOUT_LLM_MODEL=deepseek/deepseek-flash
+ANALYST_LLM_MODEL=deepseek/deepseek-flash
 SERPER_API_KEY=your_serper_api_key
 ```
+
+| 变量 | 作用 |
+| --- | --- |
+| `HOST` | 监听地址，默认 `127.0.0.1`。部署时设为 `0.0.0.0`。 |
+| `PORT` | 端口，默认 `8000`。 |
+| `APP_PASSWORD` | 登录口令。与 `ACCESS_TOKEN` 任一设置后，页面和全部 `/api` 都要登录。 |
+| `ACCESS_TOKEN` | 访问令牌。可用 `Authorization: Bearer <令牌>`，也可在登录页当作口令输入。 |
+| `REDACTION_ENABLED` | 外发脱敏开关，默认开启。 |
+| `REDACTION_CLIENT_NAMES` | 逗号分隔的客户企业名称，送出前替换为 `[客户企业1]` 这类占位符。 |
+| `REDACTION_CLIENTS_FILE` | 客户名单文件，每行一个名称。该文件已在 `.gitignore` 的 `config/clients.local.txt` 路径下忽略。 |
+| `DEEPSEEK_API_KEY` | DeepSeek 密钥。状态接口会用它探测能否连通。 |
+| `SCOUT_LLM_MODEL` / `ANALYST_LLM_MODEL` | 页面上显示的实际模型名。 |
+| `SERPER_API_KEY` | 搜索引擎密钥。未配置时状态为红色。 |
 
 ### 2. 运行架构、安全隔离与导出测试
 
@@ -166,21 +201,38 @@ SERPER_API_KEY=your_serper_api_key
 uv run python tests/test_crew_setup.py
 uv run python tests/test_flow_structure.py
 uv run python tests/test_export.py
+uv run python tests/test_redaction.py
+uv run python tests/test_sources_export.py
+uv run python tests/test_api_security.py
 ```
 
 ### 3. 执行研究任务
 
 系统支持多种执行模式：
 
-#### 模式 A：交互式 Web 战略控制台（推荐 · 最佳视觉与交互体验）
-启动本地 Web 工作台，在浏览器中直观输入课题、实时查看日志并一键下载所有交付物：
+#### 模式 A：Web 控制台（推荐）
+
+默认只监听本机。未设置访问口令时可以直接打开，终端里会有一条警告。
+
 ```bash
-uv run python main.py --ui
-# 或者直接启动
-uv run streamlit run app.py
+uv run python server.py
 ```
 
-#### 模式 B：自愈质检 Flow 模式（终端命令行首选）
+浏览器打开 http://127.0.0.1:8000 。
+
+部署到服务器时同时打开监听和登录，口令只放在服务器环境里，不要写进代码：
+
+```bash
+HOST=0.0.0.0 APP_PASSWORD='换成强口令' uv run python server.py
+```
+
+设置 `APP_PASSWORD` 或 `ACCESS_TOKEN` 之后，页面、下载、历史智库和其余 `/api` 都要先登录。脚本可以带请求头 `Authorization: Bearer <ACCESS_TOKEN>`。
+
+“在 PPT 中打开”只在通过 localhost / 127.0.0.1 访问时出现。
+
+旧的 Streamlit 界面仍可用：`uv run streamlit run app.py`。
+
+#### 模式 B：门禁重试 Flow（终端）
 阶段一采集信息后自动执行门禁质检，不合格自动重试，完成后**自动将全套交付物（MD / Word / 16:9 PPTX / 高清图表）归档至 `reports/archive/` 并自动唤起系统对应应用直接打开查阅**：
 ```bash
 uv run python main.py --flow "2026年企业级大模型微调与 RAG 架构的选型平衡"

@@ -19,7 +19,7 @@ class ResearchFlowState(BaseModel):
 
 
 class AdvancedTwoStageFlow(Flow[ResearchFlowState]):
-    """具备质检把关与自愈重试机制的两阶段研究 Flow"""
+    """两阶段研究 Flow。检索底稿会检查链接数量和篇幅，不足时重试检索。"""
 
     @start()
     def initialize(self):
@@ -71,7 +71,7 @@ class AdvancedTwoStageFlow(Flow[ResearchFlowState]):
     @listen("proceed_to_analysis")
     def run_analyst_phase(self):
         """阶段二：深度综合推演与风险事实核验（完全隔离网络工具）"""
-        print("\n📊 [阶段二: Analyst] 启动深度研判与交叉核验...")
+        print("\n📊 [阶段二: Analyst] 根据阶段一底稿整理研判（此阶段不另开公网搜索）...")
         crew_obj = TwoStageResearchCrew()
         analyst_agent = crew_obj.synthesis_analyst()
         analysis_task = crew_obj.deep_analysis_task()

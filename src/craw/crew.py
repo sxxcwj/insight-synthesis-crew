@@ -54,7 +54,7 @@ class TwoStageResearchCrew:
         llm_model = os.getenv("ANALYST_LLM_MODEL", cfg.get("llm", "deepseek/deepseek-flash"))
         return Agent(
             config=cfg,
-            # 严格限制：仅提供本地受控文件读取，阻断公网搜索工具，杜绝发散与幻觉
+            # 分析员只挂载本地文件读取，不挂载公网搜索。这不能消除模型幻觉。
             tools=[FileReadTool()],
             llm=llm_model,
         )

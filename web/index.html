@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insight Synthesis Studio · 战略研究智能体控制台</title>
+    <title>长伴 · 战略研究智能体</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,19 +24,19 @@
                     </svg>
                 </div>
                 <div class="brand-text">
-                    <div class="brand-title">INSIGHT SYNTHESIS</div>
-                    <div class="brand-subtitle">STRATEGIC RESEARCH STUDIO · 4A EXECUTIVE</div>
+                    <div class="brand-title">长伴咨询</div>
+                    <div class="brand-subtitle">长伴 · 战略研究智能体</div>
                 </div>
             </div>
 
             <div class="nav-status-group">
                 <div class="status-pill" id="deepseekStatus">
                     <span class="dot green"></span>
-                    <span class="text">DeepSeek-V3</span>
+                    <span class="text">正在读取模型状态</span>
                 </div>
                 <div class="status-pill" id="searchStatus">
-                    <span class="dot blue"></span>
-                    <span class="text">Search Engine</span>
+                    <span class="dot yellow"></span>
+                    <span class="text">正在读取搜索状态</span>
                 </div>
                 <button class="vault-btn" id="openVaultBtn">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -51,36 +51,36 @@
         <main class="main-content">
             <!-- 战略英雄区 -->
             <section class="hero-section">
-                <div class="hero-badge">Autonomous Intelligence & Multi-modal Synthesis · V2.4</div>
+                <div class="hero-badge">长伴咨询 · 人力资源战略研究</div>
                 <h1 class="hero-headline">
-                    前瞻战略研究<br>
-                    <span class="gradient-text">全格式商业交付智能体</span>
+                    人力资源课题研究<br>
+                    <span class="gradient-text">咨询交付智能体</span>
                 </h1>
                 <p class="hero-description">
-                    专为企业决策高管与 4A 战略咨询打造。自动化协同高级情报搜寻员与战略主笔，执行广度网络搜寻、自愈反幻觉质量门禁、量化指标提炼，自动交付 Word、16:9 商业幻灯片、300 DPI 趋势图及 Markdown 简报。
+                    面向山西长伴人力资源有限公司的内部研究助手。检索员收集公开资料并保留链接，分析员据此整理判断。底稿会检查链接数量和篇幅，不足时重试检索。交付 Word、16:9 幻灯片、趋势图和 Markdown，文末列出引用来源。
                 </p>
 
                 <!-- 能力矩阵 KPI 指标条 -->
                 <div class="kpi-grid">
                     <div class="kpi-box">
-                        <div class="kpi-header">INFERENCE CORE</div>
-                        <div class="kpi-num">DeepSeek-V3</div>
-                        <div class="kpi-sub">低延迟战略推演大脑</div>
+                        <div class="kpi-header">推理模型</div>
+                        <div class="kpi-num" id="kpiModelName">读取配置中</div>
+                        <div class="kpi-sub">显示实际配置的模型名</div>
                     </div>
                     <div class="kpi-box">
-                        <div class="kpi-header">ORCHESTRATION</div>
-                        <div class="kpi-num">2-Stage Flow</div>
-                        <div class="kpi-sub">Scout 探测 + Analyst 研判</div>
+                        <div class="kpi-header">协同流程</div>
+                        <div class="kpi-num">两阶段</div>
+                        <div class="kpi-sub">检索员 + 分析员</div>
                     </div>
                     <div class="kpi-box">
-                        <div class="kpi-header">QUALITY GATE</div>
-                        <div class="kpi-num">Self-Healing</div>
-                        <div class="kpi-sub">双信源抗幻觉自动质检</div>
+                        <div class="kpi-header">质量门禁</div>
+                        <div class="kpi-num">链接与篇幅</div>
+                        <div class="kpi-sub">不足时重试检索，最多 2 次</div>
                     </div>
                     <div class="kpi-box">
-                        <div class="kpi-header">DELIVERABLES</div>
-                        <div class="kpi-num">4 Formats</div>
-                        <div class="kpi-sub">Word · 16:9 PPT · 图表 · MD</div>
+                        <div class="kpi-header">交付成果</div>
+                        <div class="kpi-num">四种文件</div>
+                        <div class="kpi-sub">Word · 幻灯片 · 图表 · Markdown</div>
                     </div>
                 </div>
             </section>
@@ -94,10 +94,10 @@
                     </div>
                     <div class="mode-switch">
                         <button class="mode-btn active" data-mode="flow">
-                            <span class="mode-icon">🛡️</span> Flow 自愈质检模式
+                            <span class="mode-icon">🛡️</span> 门禁重试模式
                         </button>
                         <button class="mode-btn" data-mode="crew">
-                            <span class="mode-icon">⚡</span> Crew 标准模式
+                            <span class="mode-icon">⚡</span> 标准顺序模式
                         </button>
                     </div>
                 </div>
@@ -106,10 +106,10 @@
                 <div class="presets-row">
                     <span class="presets-label">标杆研究范例:</span>
                     <div class="presets-chips">
-                        <button class="preset-chip">2026年企业级大模型微调与 RAG 架构的选型平衡与落地实践</button>
-                        <button class="preset-chip">低空经济在城市物流与垂直起降（eVTOL）场景的商业化演进格局</button>
-                        <button class="preset-chip">全球半导体先进制程（2nm/GAA）与先进制程封装技术的竞争态势</button>
-                        <button class="preset-chip">具身智能机器人软硬件协同体系与高保真物理仿真训练发展趋势</button>
+                        <button class="preset-chip">制造业薪酬体系对标与调薪策略</button>
+                        <button class="preset-chip">中层干部梯队建设与继任计划</button>
+                        <button class="preset-chip">绩效考核体系从 KPI 向 OKR 过渡</button>
+                        <button class="preset-chip">劳动用工合规风险排查与整改</button>
                     </div>
                 </div>
 
@@ -120,7 +120,7 @@
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
-                        <input type="text" id="topicInput" placeholder="输入产业、商业或技术研究课题，例如：2026年中国人形机器人核心零部件供应链与商业落地前景..." />
+                        <input type="text" id="topicInput" placeholder="输入人力资源课题，例如：制造业薪酬体系对标与调薪策略" />
                         <span class="shortcut-hint">按 Enter 启动</span>
                     </div>
                     <button class="launch-btn" id="launchBtn">
@@ -131,6 +131,7 @@
                         <span class="btn-label">启动全流程战略研究</span>
                     </button>
                 </div>
+                <p class="redaction-note" id="redactionNote">正在读取脱敏开关…</p>
             </section>
 
             <!-- 实时研究流水线可视化状态（运行时激活） -->
@@ -155,28 +156,28 @@
                             <div class="step-dot"></div>
                             <div class="step-info">
                                 <div class="step-name">1. 全网广度探测</div>
-                                <div class="step-desc">Scout 检索与去噪</div>
+                                <div class="step-desc">检索员搜集公开资料</div>
                             </div>
                         </div>
                         <div class="step-node" id="stepGate">
                             <div class="step-dot"></div>
                             <div class="step-info">
                                 <div class="step-name">2. 质量门禁校验</div>
-                                <div class="step-desc">信源密度与反幻觉</div>
+                                <div class="step-desc">链接数量与篇幅</div>
                             </div>
                         </div>
                         <div class="step-node" id="stepAnalyst">
                             <div class="step-dot"></div>
                             <div class="step-info">
                                 <div class="step-name">3. 战略深度研判</div>
-                                <div class="step-desc">Analyst 洞察提炼</div>
+                                <div class="step-desc">分析员整理判断</div>
                             </div>
                         </div>
                         <div class="step-node" id="stepMultimodal">
                             <div class="step-dot"></div>
                             <div class="step-info">
                                 <div class="step-name">4. 多模态全套交付</div>
-                                <div class="step-desc">Word / PPT / 300DPI</div>
+                                <div class="step-desc">Word、幻灯片与图表</div>
                             </div>
                         </div>
                     </div>
@@ -187,7 +188,7 @@
                             <div class="terminal-dots">
                                 <span></span><span></span><span></span>
                             </div>
-                            <span class="terminal-title">AGENT TELEMETRY STREAM</span>
+                            <span class="terminal-title">智能体运行日志</span>
                         </div>
                         <div class="terminal-body" id="logStream">
                             <div class="log-line text-muted">> 系统就绪，等待下达战略研究指令...</div>
@@ -201,7 +202,7 @@
                 <div class="section-title-wrap">
                     <span class="section-indicator"></span>
                     <h2 class="panel-title">战略研究成果交付矩阵</h2>
-                    <span class="badge-tag">EXECUTIVE DELIVERABLES</span>
+                    <span class="badge-tag">交付成果</span>
                 </div>
 
                 <div class="deliverables-grid">
@@ -234,7 +235,7 @@
                             <span class="file-size" id="sizePptx">-- KB</span>
                         </div>
                         <h3 class="asset-name">商业演讲汇报幻灯片</h3>
-                        <p class="asset-desc">专为董事会及高层决策定制的 16:9 宽屏母版。涵盖 Slate 900 大屏封面、执行摘要看板、3 栏洞察矩阵与前瞻路线图。</p>
+                        <p class="asset-desc">适合内部汇报的 16:9 宽屏幻灯片，包含封面、摘要、发现、风险、建议和来源页。</p>
                         <div class="card-footer double-btn">
                             <a href="/api/deliverables/download/pptx" class="download-action-btn" id="btnDownloadPptx">
                                 下载 PPT
@@ -258,7 +259,7 @@
                             <span class="file-size" id="sizeChart">-- KB</span>
                         </div>
                         <h3 class="asset-name">量化发展趋势图表</h3>
-                        <p class="asset-desc">基于研究结论提炼的行业关键量化指标，采用 Matplotlib 印刷级高分辨率引擎渲染，Slate 900 / Royal Blue 色彩规范。</p>
+                        <p class="asset-desc">把报告里的量化字段画成高分辨率图表。图中数字来自报告字段，请与引用来源核对。</p>
                         <div class="card-footer double-btn">
                             <a href="/api/deliverables/download/chart" class="download-action-btn" id="btnDownloadChart">
                                 下载原图
@@ -321,8 +322,11 @@
                     </div>
                     <button class="close-modal-btn" id="closeVaultBtn">&times;</button>
                 </div>
-                <div class="modal-body" id="vaultList">
-                    <div class="loading-spinner">加载历史智库中...</div>
+                <div class="modal-body">
+                    <input type="search" id="vaultSearch" class="vault-search" placeholder="按关键词搜索课题或正文" />
+                    <div id="vaultList">
+                        <div class="loading-spinner">加载历史智库中...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -331,7 +335,7 @@
         <div class="modal-backdrop" id="chartModal">
             <div class="modal-box modal-wide">
                 <div class="modal-header">
-                    <div class="modal-title">300 DPI 关键量化发展趋势图表</div>
+                    <div class="modal-title">关键量化发展趋势图表</div>
                     <button class="close-modal-btn" id="closeChartBtn">&times;</button>
                 </div>
                 <div class="modal-body chart-modal-body">

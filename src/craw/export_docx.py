@@ -11,6 +11,81 @@ from docx.oxml.ns import nsdecls, qn
 
 from craw.export_charts import extract_chart_data_from_report, render_consulting_chart
 
+_URL_RE = re.compile(r"https?://[^\s<>\]\)\"']+")
+
+
+def collect_sources(sources: Any, content: str = "") -> list:
+    """合并结构化引用，并把正文里出现、尚未列入的链接补进来源清单。"""
+    merged = []
+    seen = set()
+    for src in sources or []:
+        if isinstance(src, dict):
+            item = {
+                "title": str(src.get("title") or "参考来源").strip() or "参考来源",
+                "url": str(src.get("url") or "").strip().rstrip(".,;，。)"),
+                "evidence": str(src.get("evidence") or "").strip(),
+            }
+        else:
+            item = {"title": str(src).strip() or "参考来源", "url": "", "evidence": ""}
+        if item["url"] and item["url"] in seen:
+            continue
+        if item["url"]:
+            seen.add(item["url"])
+        merged.append(item)
+
+    for match in _URL_RE.findall(content or ""):
+        url = match.rstrip(".,;，。)")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        merged.append({"title": "文中链接", "url": url, "evidence": ""})
+    return merged
+
+
+def add_hyperlink(paragraph, text: str, url: str):
+    """在 Word 段落中插入可点击的外部链接。"""
+    part = paragraph.part
+    relation_id = part.relate_to(
+        url,
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+        is_external=True,
+    )
+    hyperlink = OxmlElement("w:hyperlink")
+    hyperlink.set(qn("r:id"), relation_id)
+
+    new_run = OxmlElement("w:r")
+    run_props = OxmlElement("w:rPr")
+    color = OxmlElement("w:color")
+    color.set(qn("w:val"), "2563EB")
+    run_props.append(color)
+    underline = OxmlElement("w:u")
+    underline.set(qn("w:val"), "single")
+    run_props.append(underline)
+    size = OxmlElement("w:sz")
+    size.set(qn("w:val"), "17")
+    run_props.append(size)
+    new_run.append(run_props)
+
+    text_elem = OxmlElement("w:t")
+    text_elem.set(qn("xml:space"), "preserve")
+    text_elem.text = text
+    new_run.append(text_elem)
+    hyperlink.append(new_run)
+    paragraph._p.append(hyperlink)
+
+
+def add_url_run(paragraph, url: str):
+    if not url:
+        return
+    try:
+        add_hyperlink(paragraph, url, url)
+    except Exception:
+        run = paragraph.add_run(url)
+        run.font.name = "Calibri"
+        run.font.size = Pt(8.5)
+        run.font.color.rgb = RGBColor(0x25, 0x63, 0xEB)
+        run.underline = True
+
 
 def set_cell_background(cell, fill_hex):
     """设置单元格背景颜色"""
@@ -187,7 +262,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
     p_sub = doc.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_sub.paragraph_format.space_after = Pt(18)
-    run_sub = p_sub.add_run("DeepSeek-Flash 两阶段研究系统 | 深度交叉核验与决策简报")
+    run_sub = p_sub.add_run("长伴咨询 · 战略研究简报 | 检索底稿整理后的研判，请核对文末来源")
     run_sub.font.name = "Microsoft YaHei"
     run_sub.font.size = Pt(9.5)
     run_sub.font.color.rgb = RGBColor(0x64, 0x74, 0x8B)
@@ -200,7 +275,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
 
         # 3. 核心洞察与发现
         if "key_findings" in data and data["key_findings"]:
-            add_section_heading(doc, "一、 核心洞察与交叉核验发现 (Key Findings)", level=1)
+            add_section_heading(doc, "一、 核心发现", level=1)
             for idx, item in enumerate(data["key_findings"], 1):
                 title = item.get("title", f"洞察 {idx}")
                 details = item.get("details", "")
@@ -229,7 +304,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
             p_cap = doc.add_paragraph()
             p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_cap.paragraph_format.space_after = Pt(14)
-            r_cap = p_cap.add_run("图 1：行业关键量化指标与发展趋势研判 (数据来源：研报综合测算与多源交叉核验)")
+            r_cap = p_cap.add_run("图 1：报告中的量化字段绘图，请与文末引用来源核对")
             r_cap.font.name = "Microsoft YaHei"
             r_cap.font.size = Pt(8.5)
             r_cap.font.italic = True
@@ -278,10 +353,10 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
                 r_body.font.size = Pt(10)
                 r_body.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 
-        # 7. 权威引用与信息来源清单 (References & Sources)
-        sources_list = data.get("sources") or data.get("references") or []
+        # 7. 引用来源（标题、链接、对应论据）
+        sources_list = collect_sources(data.get("sources") or data.get("references") or [], content)
         if sources_list:
-            add_section_heading(doc, f"{sec_num_src}、 权威引用与信息来源清单 (References & Sources)", level=1)
+            add_section_heading(doc, f"{sec_num_src}、 引用来源", level=1)
             
             # 创建精美参考文献表格
             table = doc.add_table(rows=1, cols=4)
@@ -347,11 +422,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
                 # 链接 URL
                 p3 = row_cells[3].paragraphs[0]
                 url = src.get("url", "") if isinstance(src, dict) else ""
-                r3 = p3.add_run(url)
-                r3.font.name = "Calibri"
-                r3.font.size = Pt(8.5)
-                r3.font.color.rgb = RGBColor(0x25, 0x63, 0xEB)
-                r3.font.underline = True
+                add_url_run(p3, url)
 
             doc.add_paragraph().paragraph_format.space_after = Pt(12)
 
@@ -373,7 +444,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
                 formatted_md.append(f"> **📋 执行摘要 (Executive Summary)**\n>\n> {data['executive_summary']}\n")
             
             if "key_findings" in data and data["key_findings"]:
-                formatted_md.append("## 一、 核心洞察与交叉核验发现 (Key Findings)\n")
+                formatted_md.append("## 一、 核心发现\n")
                 for idx, item in enumerate(data["key_findings"], 1):
                     formatted_md.append(f"### 1.{idx} {item.get('title', '')}\n")
                     formatted_md.append(f"{item.get('details', '')}\n")
@@ -394,7 +465,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: 
                     formatted_md.append(f"{idx}. {rec}\n")
 
             if sources_list:
-                formatted_md.append(f"## {sec_num_src}、 权威引用与信息来源清单 (References & Sources)\n")
+                formatted_md.append(f"## {sec_num_src}、 引用来源\n")
                 for idx, src in enumerate(sources_list, 1):
                     if isinstance(src, dict):
                         stitle = src.get('title', '参考来源')
