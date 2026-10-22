@@ -51,12 +51,13 @@ def run():
         print("=" * 60)
         print(result.raw)
 
-        # 自动归档并导出 Word（支持时间戳历史归档与最新镜像）
+        # 自动归档并导出 Word 与 16:9 汇报 PPT
         import shutil
         from craw.export_docx import get_report_paths, export_markdown_to_docx
+        from craw.export_pptx import export_report_to_pptx
 
         output_dir = Path("reports")
-        archive_md, archive_docx, latest_md, latest_docx = get_report_paths(
+        archive_md, archive_docx, archive_pptx, latest_md, latest_docx, latest_pptx = get_report_paths(
             output_dir, topic
         )
 
@@ -67,11 +68,19 @@ def run():
             export_markdown_to_docx(archive_md, archive_docx)
             shutil.copy2(archive_md, latest_md)
             shutil.copy2(archive_docx, latest_docx)
-            print(f"\n💾 [历史永久归档] Markdown 已保存至: {archive_md}")
-            print(f"📄 [历史永久归档] Word 文档已保存至: {archive_docx}")
-            print(f"⭐ [最新便捷镜像] 已同步镜像至: {latest_docx}")
+            print(f"\n💾 [历史永久归档] Markdown 已保存至: {archive_md.name}")
+            print(f"📄 [历史永久归档] Word 文档已保存至: {archive_docx.name}")
+            print(f"⭐ [最新便捷镜像] Word 已同步更新: {latest_docx.name}")
         except Exception as e:
             print(f"Word 文档处理提示: {e}")
+
+        try:
+            export_report_to_pptx(archive_md, archive_pptx)
+            shutil.copy2(archive_pptx, latest_pptx)
+            print(f"🖥️ [历史永久归档] 汇报 PPT 已保存至: {archive_pptx.name}")
+            print(f"⭐ [最新便捷镜像] PPT 已同步更新: {latest_pptx.name}")
+        except Exception as e:
+            print(f"PPT 导出处理提示: {e}")
 
 
 

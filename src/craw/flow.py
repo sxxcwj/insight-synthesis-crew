@@ -89,12 +89,13 @@ class AdvancedTwoStageFlow(Flow[ResearchFlowState]):
 
     @listen(run_analyst_phase)
     def save_and_export_report(self, analysis_result):
-        """归档并导出最终研究报告：同时生成时间戳历史版本与最新版本镜像"""
+        """归档并导出最终研究报告：全套输出 Markdown、Word 与 16:9 汇报 PPT"""
         import shutil
         from craw.export_docx import get_report_paths, export_markdown_to_docx
+        from craw.export_pptx import export_report_to_pptx
 
         output_dir = Path("reports")
-        archive_md, archive_docx, latest_md, latest_docx = get_report_paths(
+        archive_md, archive_docx, archive_pptx, latest_md, latest_docx, latest_pptx = get_report_paths(
             output_dir, self.state.topic
         )
 
@@ -104,18 +105,25 @@ class AdvancedTwoStageFlow(Flow[ResearchFlowState]):
         with open(archive_md, "w", encoding="utf-8") as f:
             f.write(f"# 研究课题：{self.state.topic}\n\n{report_content}")
 
-        # 2. 导出历史归档 Word 文档并自动唤起打开
+        # 2. 导出历史归档 Word 文档
         try:
             export_markdown_to_docx(archive_md, archive_docx)
-            # 3. 复制更新最新便捷副本
             shutil.copy2(archive_md, latest_md)
             shutil.copy2(archive_docx, latest_docx)
-
-            print(f"\n💾 [历史永久归档] Markdown 已保存至: {archive_md}")
-            print(f"📄 [历史永久归档] Word 文档已保存至: {archive_docx}")
-            print(f"⭐ [最新便捷镜像] 已同步镜像至: {latest_docx}")
+            print(f"\n💾 [历史永久归档] Markdown 已保存至: {archive_md.name}")
+            print(f"📄 [历史永久归档] Word 文档已保存至: {archive_docx.name}")
+            print(f"⭐ [最新便捷镜像] Word 已同步更新: {latest_docx.name}")
         except Exception as e:
-            print(f"⚠️ 报告归档处理提示: {e}")
+            print(f"⚠️ Word 报告归档处理提示: {e}")
+
+        # 3. 导出 16:9 商业汇报 PPT 并唤起打开
+        try:
+            export_report_to_pptx(archive_md, archive_pptx)
+            shutil.copy2(archive_pptx, latest_pptx)
+            print(f"🖥️ [历史永久归档] 汇报 PPT 已保存至: {archive_pptx.name}")
+            print(f"⭐ [最新便捷镜像] PPT 已同步更新: {latest_pptx.name}")
+        except Exception as e:
+            print(f"⚠️ PPT 导出处理提示: {e}")
 
         self.state.output_filepath = str(archive_docx)
         return self.state.output_filepath

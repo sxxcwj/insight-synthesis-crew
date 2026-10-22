@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Any
 from pathlib import Path
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
@@ -95,21 +96,25 @@ def add_section_heading(doc, text, level=1):
     return p
 
 
-def export_markdown_to_docx(md_path: Path, docx_path: Path):
+def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = True):
     """将生成的研究报告解析并导出为专业排版的 Word (.docx) 文档"""
-    content = md_path.read_text(encoding="utf-8")
-
-    # 尝试从文本中解析 JSON
     data = None
-    json_match = re.search(r"\{[\s\S]*\}", content)
-    if json_match:
-        try:
-            data = json.loads(json_match.group(0))
-        except Exception:
-            data = None
+    if isinstance(md_or_data, dict):
+        data = md_or_data
+        content = ""
+    else:
+        content = Path(md_or_data).read_text(encoding="utf-8") if isinstance(md_or_data, (Path, str)) else ""
+
+        # 尝试从文本中解析 JSON
+        json_match = re.search(r"\{[\s\S]*\}", content)
+        if json_match:
+            try:
+                data = json.loads(json_match.group(0))
+            except Exception:
+                data = None
 
     # 若未找到 JSON，则通过 Markdown 结构智能解析为字典对象
-    if not data:
+    if not data and content:
         topic_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
         topic_val = topic_match.group(1).strip() if topic_match else "研究课题简报"
         
@@ -365,7 +370,7 @@ def export_markdown_to_docx(md_path: Path, docx_path: Path):
     # 自动唤起系统 Word 应用打开文档，无需用户手动输入命令
     import platform
     import subprocess
-    if platform.system() == "Darwin":
+    if auto_open and platform.system() == "Darwin":
         try:
             # 优先尝试使用 Microsoft Word 打开，若无则使用默认应用打开
             res = subprocess.run(["open", "-a", "Microsoft Word", str(docx_path)], check=False, capture_output=True)
@@ -378,27 +383,41 @@ def export_markdown_to_docx(md_path: Path, docx_path: Path):
     return docx_path
 
 
-def get_report_paths(output_dir: Path, topic: str):
+def get_report_paths(output_dir_or_topic: Any = Path("reports"), topic: str = None):
     """
     为每次研究生成带时间戳的历史归档文件保存在 reports/archive/ 目录下，
     同时在 reports/ 根目录下维护一份 latest (research_report.*) 最新副本。
+    涵盖 Markdown (.md)、Word (.docx) 以及 PowerPoint (.pptx)。
+    支持 get_report_paths(output_dir, topic) 或 get_report_paths(topic)。
     """
     import datetime
+    if topic is None:
+        if isinstance(output_dir_or_topic, (str, Path)) and not Path(output_dir_or_topic).is_dir():
+            topic = str(output_dir_or_topic)
+            output_dir = Path("reports")
+        else:
+            output_dir = Path(output_dir_or_topic)
+            topic = "research_report"
+    else:
+        output_dir = Path(output_dir_or_topic)
+
     output_dir.mkdir(parents=True, exist_ok=True)
     archive_dir = output_dir / "archive"
     archive_dir.mkdir(parents=True, exist_ok=True)
 
     now_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    clean_topic = re.sub(r'[\\/*?:"<>| \t\n]', '_', topic)[:25].strip('_')
+    clean_topic = re.sub(r'[\\/*?:"<>| \t\n]', '_', str(topic))[:25].strip('_')
     if not clean_topic:
         clean_topic = "research_report"
 
     archive_md = archive_dir / f"{now_str}_{clean_topic}.md"
     archive_docx = archive_dir / f"{now_str}_{clean_topic}.docx"
+    archive_pptx = archive_dir / f"{now_str}_{clean_topic}.pptx"
     latest_md = output_dir / "research_report.md"
     latest_docx = output_dir / "research_report.docx"
+    latest_pptx = output_dir / "research_report.pptx"
 
-    return archive_md, archive_docx, latest_md, latest_docx
+    return archive_md, archive_docx, archive_pptx, latest_md, latest_docx, latest_pptx
 
 
 if __name__ == "__main__":
