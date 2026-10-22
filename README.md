@@ -1,19 +1,49 @@
-# 基于 CrewAI 与 DeepSeek-Flash 的两阶段研究员 Agent 系统
+# Insight Synthesis Crew | 深度研究与咨询级报告合成智能体系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.12%2B-blue" alt="Python Version" />
-  <img src="https://img.shields.io/badge/CrewAI-1.15.x-purple" alt="CrewAI" />
-  <img src="https://img.shields.io/badge/LLM-DeepSeek--V4.1--Flash-brightgreen" alt="DeepSeek" />
-  <img src="https://img.shields.io/badge/Search-Google%20Serper-orange" alt="Search Engine" />
-  <img src="https://img.shields.io/badge/Output-Markdown%20%7C%20Word%20(.docx)-blueviolet" alt="Output Formats" />
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python Version" /></a>
+  <a href="https://crewai.com/"><img src="https://img.shields.io/badge/CrewAI-Multi--Agent-orange.svg" alt="Framework" /></a>
+  <a href="https://www.deepseek.com/"><img src="https://img.shields.io/badge/LLM-DeepSeek--V4.1--Flash-blueviolet.svg" alt="LLM" /></a>
+  <a href="https://serper.dev/"><img src="https://img.shields.io/badge/Search-Google%20Serper-orange" alt="Search Engine" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" /></a>
 </p>
 
-本项目基于 **CrewAI** 与 **DeepSeek-V4.1-Flash** 构建标准的**两阶段协同研究体系**（Phase 1: 广度情报搜寻与全网线索抓取 -> Phase 2: 深度分析、逻辑交叉比对与事实核验）。系统严格遵循最小权限原则（Least Privilege）进行工具隔离，并支持自愈质检把关、参考文献自动提取与专业排版 Word (.docx) 自动生成及唤起。
+**Insight Synthesis Crew** 是一个基于 **CrewAI** 与 **DeepSeek-V4.1-Flash** 构建的**两阶段协同深度研究与报告合成系统**。系统通过模拟专业咨询机构的分工机制，将“广度情报搜集与多源交叉验证”与“深度逻辑综合与咨询级文档排版”解耦，内置自愈式质量门禁（Quality Gate），支持一键导出结构严谨的 Markdown 与 Word (`.docx`) 研究报告。
 
 ---
 
-## 🏛️ 核心架构与设计原则
+## ✨ 核心特性
+
+- **🔄 两阶段智能体协同架构（Two-Stage Pipeline）**
+  - **第一阶段（广度检索与去噪核验）**：情报检索智能体聚焦多维度信息挖掘、关键数据提取、事实交叉核验与信源记录，输出高信息密度的结构化研究底稿。
+  - **第二阶段（洞察合成与咨询级撰稿）**：首席主笔智能体基于核验后的底稿，提炼核心商业/学术洞察，按麦肯锡金字塔原理完成深度报告撰写与结构化排版。
+- **🛡️ 自愈式质量门禁（Self-Healing Quality Gate）**
+  - 内置输出质量评估与自动重试/补偿机制，对论据完整性、信源可追溯性及格式合规性进行自动化质检，杜绝大模型“幻觉”与敷衍输出。
+- **📄 双格式咨询级报告导出（Markdown & Word）**
+  - 原生支持生成排版精美的 `.md` 文档，并自动渲染转换为标准咨询级 `.docx` Word 报告（含多级标题样式、参考文献表格、执行摘要高亮卡片与标准化段落排版），且在生成后自动调用系统应用打开查阅。
+- **⚡ 极致性价比与高吞吐驱动**
+  - 深度适配 **DeepSeek-V4.1-Flash** 模型，在保持长文本深度推理能力的同时，大幅降低多轮 Agent 交互的 Token 成本与响应延迟。
+- **🧰 现代化 Python 工程规范**
+  - 采用 `uv` 进行极速依赖与虚拟环境管理，配置与代码分离（`config/` + `src/`），历史报告永久沉淀（`reports/archive/`），并提供完整的单元测试套件。
+
+---
+
+## 🏗️ 系统工作流架构
+
+```mermaid
+graph LR
+    A[用户输入研究课题] --> B(Stage 1: 深度情报搜集 Agent)
+    B --> C{质量门禁 & 事实核验}
+    C -- 信息不足/补充检索 --> B
+    C -- 核验通过 --> D[结构化研究底稿]
+    D --> E(Stage 2: 洞察合成与撰稿 Agent)
+    E --> F{报告质检 Gate}
+    F -- 格式/深度不达标 --> E
+    F -- 质检通过 --> G[导出 Markdown 报告]
+    F -- 自动排版渲染 --> H[导出 Word .docx 报告]
+```
+
+### 最小权限隔离与安全设计原则（Least Privilege）
 
 ```
                        用户输入研究课题 (Topic)
@@ -73,6 +103,7 @@
 │   ├── test_crew_setup.py    # 工具安全隔离与权限边界自动化测试
 │   └── test_flow_structure.py# Flow 状态生命周期与路由逻辑验证
 ├── .env.example              # 环境变量与 API 密钥模版 (已脱敏)
+├── LICENSE                   # MIT 开源许可证
 ├── main.py                   # 命令行多模式统一运行入口
 └── pyproject.toml            # uv 依赖管理配置
 ```
@@ -149,4 +180,3 @@ uv run python main.py --plot
 ## 📄 开源许可证
 
 本项目基于 [MIT License](LICENSE) 开源。
-
