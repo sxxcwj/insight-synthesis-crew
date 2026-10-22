@@ -4,8 +4,9 @@ import time
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 加载 .env 环境变量
+# 加载 .env 环境变量并优化性能
 load_dotenv()
+os.environ["CREWAI_TELEMETRY_OPT_OUT"] = "true"
 
 import streamlit as st
 
@@ -22,13 +23,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 注入现代商务级 CSS
+# 注入现代商务级 CSS（使用纯本地系统字体，彻底杜绝外网 CDN 阻塞）
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    
     html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, "Helvetica Neue", "Microsoft YaHei", sans-serif;
     }
     
     .main-header {
@@ -158,23 +157,38 @@ if start_btn:
     elif not deepseek_key:
         st.error("❌ 未检测到 DEEPSEEK_API_KEY，请先在 .env 中配置密钥。")
     else:
-        status_box = st.status("🛠️ 研究编排引擎启动中...", expanded=True)
-        
-        try:
-            status_box.update(label="🔎 [阶段一: Scout] 正在执行全网广度情报检索与去噪...", state="running")
-            time.sleep(0.5)
+        class RealtimeLogRedirector:
+            def __init__(self, placeholder):
+                self.placeholder = placeholder
+                self.lines = []
+                self.orig_stdout = sys.stdout
 
+            def write(self, s):
+                self.orig_stdout.write(s)
+                cleaned = s.strip()
+                if cleaned:
+                    self.lines.append(cleaned)
+                    self.placeholder.code("\n".join(self.lines[-12:]), language="shell")
+
+            def flush(self):
+                self.orig_stdout.flush()
+
+        status_box = st.status("🛠️ 智能体两阶段协同研究执行中...", expanded=True)
+        log_placeholder = status_box.empty()
+        redirector = RealtimeLogRedirector(log_placeholder)
+        old_stdout = sys.stdout
+        sys.stdout = redirector
+
+        try:
             if "Flow" in exec_mode:
                 from craw.flow import AdvancedTwoStageFlow
                 flow_inst = AdvancedTwoStageFlow()
                 flow_inst.state.topic = topic_query.strip()
-                status_box.write("• 阶段一 Scout 智能体正在并发检索关键客观事实与量化指标...")
                 flow_inst.kickoff()
                 status_box.update(label="✅ [全流程完成] 质量门禁验证通过，多模态交付物已全部生成！", state="complete")
             else:
                 from craw.crew import TwoStageResearchCrew
                 crew_obj = TwoStageResearchCrew().crew()
-                status_box.write("• 标准 Crew 线性启动...")
                 result = crew_obj.kickoff(inputs={"topic": topic_query.strip()})
                 status_box.update(label="✅ [两阶段完成] 研究交付物已生成！", state="complete")
 
@@ -182,6 +196,8 @@ if start_btn:
         except Exception as err:
             status_box.update(label="❌ 运行遇到异常", state="error")
             st.error(f"执行中断: {err}")
+        finally:
+            sys.stdout = old_stdout
 
 # 结果展示区（读取最新的 reports 文件）
 latest_md_path = Path("reports/research_report.md")
