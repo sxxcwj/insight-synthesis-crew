@@ -11,4 +11,5 @@ dependencies = [
     "python-dotenv>=1.2.4",
     "duckduckgo-search>=7.0.0",
     "python-pptx>=1.0.0",
+    "matplotlib>=3.11.2",
 ]

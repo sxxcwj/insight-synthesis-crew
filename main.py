@@ -64,10 +64,17 @@ def run():
         with open(archive_md, "w", encoding="utf-8") as f:
             f.write(f"# 研究课题：{topic}\n\n{result.raw}")
 
+        archive_chart = archive_docx.with_suffix(".png")
+        latest_chart = output_dir / "research_report_chart.png"
+
         try:
-            export_markdown_to_docx(archive_md, archive_docx)
+            export_markdown_to_docx(archive_md, archive_docx, chart_image_path=archive_chart)
             shutil.copy2(archive_md, latest_md)
             shutil.copy2(archive_docx, latest_docx)
+            if archive_chart.exists():
+                shutil.copy2(archive_chart, latest_chart)
+                print(f"📈 [历史永久归档] 可视化图表已保存至: {archive_chart.name}")
+                print(f"⭐ [最新便捷镜像] 图表已同步更新: {latest_chart.name}")
             print(f"\n💾 [历史永久归档] Markdown 已保存至: {archive_md.name}")
             print(f"📄 [历史永久归档] Word 文档已保存至: {archive_docx.name}")
             print(f"⭐ [最新便捷镜像] Word 已同步更新: {latest_docx.name}")
@@ -75,7 +82,7 @@ def run():
             print(f"Word 文档处理提示: {e}")
 
         try:
-            export_report_to_pptx(archive_md, archive_pptx)
+            export_report_to_pptx(archive_md, archive_pptx, chart_image_path=archive_chart)
             shutil.copy2(archive_pptx, latest_pptx)
             print(f"🖥️ [历史永久归档] 汇报 PPT 已保存至: {archive_pptx.name}")
             print(f"⭐ [最新便捷镜像] PPT 已同步更新: {latest_pptx.name}")

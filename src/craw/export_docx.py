@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any
+from typing import Any, Optional
 from pathlib import Path
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
@@ -8,6 +8,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
+
+from craw.export_charts import extract_chart_data_from_report, render_consulting_chart
 
 
 def set_cell_background(cell, fill_hex):
@@ -96,7 +98,7 @@ def add_section_heading(doc, text, level=1):
     return p
 
 
-def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = True):
+def export_markdown_to_docx(md_or_data: Any, docx_path: Path, chart_image_path: Optional[Path] = None, auto_open: bool = True):
     """将生成的研究报告解析并导出为专业排版的 Word (.docx) 文档"""
     data = None
     if isinstance(md_or_data, dict):
@@ -147,6 +149,17 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
             "strategic_recommendations": recs,
             "sources": sources
         }
+
+    # 尝试自动提取量化图表数据并生成高清图表
+    if not chart_image_path:
+        chart_info = extract_chart_data_from_report(data or md_or_data)
+        if chart_info:
+            c_path = docx_path.with_suffix(".png")
+            try:
+                render_consulting_chart(chart_info, c_path)
+                chart_image_path = c_path
+            except Exception as e:
+                print(f"图表渲染提示: {e}")
 
     doc = Document()
 
@@ -201,9 +214,34 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
                 r_desc.font.size = Pt(10)
                 r_desc.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 
-        # 4. 风险与不确定性评估
+        has_chart = bool(chart_image_path and Path(chart_image_path).exists())
+
+        # 4. 关键量化发展趋势图表 (若存在)
+        if has_chart:
+            add_section_heading(doc, "二、 关键量化发展趋势研判 (Quantitative Market Overview)", level=1)
+            p_img = doc.add_paragraph()
+            p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_img.paragraph_format.space_before = Pt(8)
+            p_img.paragraph_format.space_after = Pt(4)
+            r_img = p_img.add_run()
+            r_img.add_picture(str(chart_image_path), width=Inches(6.2))
+
+            p_cap = doc.add_paragraph()
+            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_cap.paragraph_format.space_after = Pt(14)
+            r_cap = p_cap.add_run("图 1：行业关键量化指标与发展趋势研判 (数据来源：研报综合测算与多源交叉核验)")
+            r_cap.font.name = "Microsoft YaHei"
+            r_cap.font.size = Pt(8.5)
+            r_cap.font.italic = True
+            r_cap.font.color.rgb = RGBColor(0x64, 0x74, 0x8B)
+
+        sec_num_risk = "三" if has_chart else "二"
+        sec_num_rec = "四" if has_chart else "三"
+        sec_num_src = "五" if has_chart else "四"
+
+        # 5. 风险与不确定性评估
         if "risk_assessment" in data and data["risk_assessment"]:
-            add_section_heading(doc, "二、 潜在风险与不确定性研判 (Risk Assessment)", level=1)
+            add_section_heading(doc, f"{sec_num_risk}、 潜在风险与不确定性研判 (Risk Assessment)", level=1)
             for idx, risk_text in enumerate(data["risk_assessment"], 1):
                 p_risk = doc.add_paragraph()
                 p_risk.paragraph_format.space_after = Pt(6)
@@ -221,9 +259,9 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
                 r_body.font.size = Pt(10)
                 r_body.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 
-        # 5. 战略行动建议
+        # 6. 战略行动建议
         if "strategic_recommendations" in data and data["strategic_recommendations"]:
-            add_section_heading(doc, "三、 前瞻性战略行动建议 (Strategic Recommendations)", level=1)
+            add_section_heading(doc, f"{sec_num_rec}、 前瞻性战略行动建议 (Strategic Recommendations)", level=1)
             for idx, rec in enumerate(data["strategic_recommendations"], 1):
                 p_rec = doc.add_paragraph()
                 p_rec.paragraph_format.space_after = Pt(6)
@@ -240,10 +278,10 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
                 r_body.font.size = Pt(10)
                 r_body.font.color.rgb = RGBColor(0x33, 0x41, 0x55)
 
-        # 6. 权威引用与信息来源清单 (References & Sources)
+        # 7. 权威引用与信息来源清单 (References & Sources)
         sources_list = data.get("sources") or data.get("references") or []
         if sources_list:
-            add_section_heading(doc, "四、 权威引用与信息来源清单 (References & Sources)", level=1)
+            add_section_heading(doc, f"{sec_num_src}、 权威引用与信息来源清单 (References & Sources)", level=1)
             
             # 创建精美参考文献表格
             table = doc.add_table(rows=1, cols=4)
@@ -326,7 +364,7 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
     doc.save(str(docx_path))
     print(f"✅ 专业 Word 文档已成功生成: {docx_path}")
 
-    # 将 reports/research_report.md 同步重构为排版优雅的人类可读 Markdown（消除 JSON 乱码感）
+    # 将配套 Markdown 同步重构为排版优雅的人类可读 Markdown（消除 JSON 乱码感）
     if data:
         try:
             formatted_md = []
@@ -339,19 +377,24 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
                 for idx, item in enumerate(data["key_findings"], 1):
                     formatted_md.append(f"### 1.{idx} {item.get('title', '')}\n")
                     formatted_md.append(f"{item.get('details', '')}\n")
+
+            if has_chart:
+                chart_rel_name = Path(chart_image_path).name
+                formatted_md.append("## 二、 关键量化发展趋势研判 (Quantitative Market Overview)\n")
+                formatted_md.append(f"![行业关键量化发展趋势研判]({chart_rel_name})\n\n")
             
             if "risk_assessment" in data and data["risk_assessment"]:
-                formatted_md.append("## 二、 潜在风险与不确定性研判 (Risk Assessment)\n")
+                formatted_md.append(f"## {sec_num_risk}、 潜在风险与不确定性研判 (Risk Assessment)\n")
                 for idx, risk_text in enumerate(data["risk_assessment"], 1):
                     formatted_md.append(f"* **⚠️ 风险点 {idx}**：{risk_text}\n")
             
             if "strategic_recommendations" in data and data["strategic_recommendations"]:
-                formatted_md.append("## 三、 前瞻性战略行动建议 (Strategic Recommendations)\n")
+                formatted_md.append(f"## {sec_num_rec}、 前瞻性战略行动建议 (Strategic Recommendations)\n")
                 for idx, rec in enumerate(data["strategic_recommendations"], 1):
                     formatted_md.append(f"{idx}. {rec}\n")
 
             if sources_list:
-                formatted_md.append("## 四、 权威引用与信息来源清单 (References & Sources)\n")
+                formatted_md.append(f"## {sec_num_src}、 权威引用与信息来源清单 (References & Sources)\n")
                 for idx, src in enumerate(sources_list, 1):
                     if isinstance(src, dict):
                         stitle = src.get('title', '参考来源')
@@ -363,7 +406,12 @@ def export_markdown_to_docx(md_or_data: Any, docx_path: Path, auto_open: bool = 
                     else:
                         formatted_md.append(f"{idx}. {src}\n")
             
-            md_path.write_text("\n".join(formatted_md), encoding="utf-8")
+            target_md_path = (
+                Path(md_or_data)
+                if isinstance(md_or_data, (Path, str)) and Path(md_or_data).suffix == ".md"
+                else docx_path.with_suffix(".md")
+            )
+            target_md_path.write_text("\n".join(formatted_md), encoding="utf-8")
         except Exception:
             pass
 

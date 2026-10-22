@@ -3,13 +3,15 @@ import re
 import platform
 import subprocess
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
+
+from craw.export_charts import extract_chart_data_from_report, render_consulting_chart
 
 
 # 商务配色板 (McKinsey / BCG 风格冷调深邃体系)
@@ -372,7 +374,70 @@ def create_sources_slide(prs, sources: List[Dict[str, Any]]):
             r_ev.font.color.rgb = COLOR_TEXT_MUTED
 
 
-def export_report_to_pptx(md_or_data: Any, pptx_path: Path, auto_open: bool = True):
+def create_quantitative_chart_slide(prs, chart_info: Dict[str, Any], chart_image_path: Path):
+    """幻灯片：核心量化指标与发展趋势研判 (图文对照)"""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    title = chart_info.get("chart_title", "核心量化发展趋势研判")
+    add_slide_header(slide, title, category="QUANTITATIVE FORECAST & TRENDS · 量化趋势")
+
+    # 左侧嵌入高分辨率图表
+    slide.shapes.add_picture(str(chart_image_path), Inches(0.8), Inches(1.55), Inches(7.6), Inches(4.7))
+
+    # 右侧卡片：核心数据亮点与战略启示
+    card = slide.shapes.add_shape(
+        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(8.7), Inches(1.55), Inches(3.8), Inches(4.7)
+    )
+    card.fill.solid()
+    card.fill.fore_color.rgb = COLOR_BG_CARD
+    card.line.color.rgb = COLOR_BORDER
+    card.line.width = Pt(1)
+
+    tf = card.text_frame
+    tf.word_wrap = True
+    tf.margin_top = Inches(0.3)
+    tf.margin_bottom = Inches(0.3)
+    tf.margin_left = Inches(0.3)
+    tf.margin_right = Inches(0.3)
+
+    p0 = tf.paragraphs[0]
+    p0.text = "📊 数据透视与战略启示"
+    p0.font.name = "Microsoft YaHei"
+    p0.font.size = Pt(12.5)
+    p0.font.bold = True
+    p0.font.color.rgb = COLOR_PRIMARY
+    p0.space_after = Pt(12)
+
+    takeaway = chart_info.get("takeaway", "")
+    if takeaway:
+        p_tk = tf.add_paragraph()
+        r_tk_title = p_tk.add_run()
+        r_tk_title.text = "核心研判结论：\n"
+        r_tk_title.font.bold = True
+        r_tk_title.font.size = Pt(10)
+        r_tk_title.font.color.rgb = COLOR_TEXT_MAIN
+        r_tk = p_tk.add_run()
+        r_tk.text = f"{takeaway}\n"
+        r_tk.font.size = Pt(9.5)
+        r_tk.font.color.rgb = COLOR_TEXT_MUTED
+        p_tk.space_after = Pt(10)
+
+    points = chart_info.get("data_points", [])
+    if points:
+        p_pts = tf.add_paragraph()
+        r_pts_title = p_pts.add_run()
+        r_pts_title.text = "关键节点观测值：\n"
+        r_pts_title.font.bold = True
+        r_pts_title.font.size = Pt(10)
+        r_pts_title.font.color.rgb = COLOR_TEXT_MAIN
+        for pt in points[:5]:
+            p_item = tf.add_paragraph()
+            p_item.text = f"• {pt.get('label', '')}: {pt.get('value', '')}{pt.get('unit', '')}"
+            p_item.font.size = Pt(9)
+            p_item.font.color.rgb = COLOR_TEXT_MAIN
+            p_item.space_after = Pt(3)
+
+
+def export_report_to_pptx(md_or_data: Any, pptx_path: Path, chart_image_path: Optional[Path] = None, auto_open: bool = True):
     """
     将研究报告解析并导出为 16:9 咨询级宽屏 PowerPoint (.pptx)
     并自动调用系统 Microsoft PowerPoint 打开
@@ -429,6 +494,24 @@ def export_report_to_pptx(md_or_data: Any, pptx_path: Path, auto_open: bool = Tr
         print("未提取到有效报告数据，跳过 PPT 导出")
         return None
 
+    # 尝试自动提取量化图表数据并生成高清图表
+    chart_info = None
+    if not chart_image_path:
+        chart_info = extract_chart_data_from_report(data or md_or_data)
+        if chart_info:
+            c_path = pptx_path.with_suffix(".png")
+            try:
+                render_consulting_chart(chart_info, c_path)
+                chart_image_path = c_path
+            except Exception as e:
+                print(f"图表渲染提示: {e}")
+    elif chart_image_path and Path(chart_image_path).exists():
+        chart_info = extract_chart_data_from_report(data or md_or_data) or {
+            "chart_title": "核心量化发展趋势研判",
+            "takeaway": "量化数据印证了该领域的强劲演进趋势与核心支撑力。",
+            "data_points": []
+        }
+
     # 初始化 16:9 演示文稿
     prs = Presentation()
     prs.slide_width = Inches(13.333)
@@ -447,6 +530,8 @@ def export_report_to_pptx(md_or_data: Any, pptx_path: Path, auto_open: bool = Tr
         create_executive_summary_slide(prs, summary)
     if findings:
         create_key_findings_slide(prs, findings)
+    if chart_image_path and Path(chart_image_path).exists() and chart_info:
+        create_quantitative_chart_slide(prs, chart_info, chart_image_path)
     if risks:
         create_risk_assessment_slide(prs, risks)
     if recs:
