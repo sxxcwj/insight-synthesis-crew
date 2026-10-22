@@ -13,8 +13,19 @@ gatherUsageStats = false
 toolbarMode = "minimal"
 
 [theme]
+base = "light"
 primaryColor = "#1D4ED8"
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F8FAFC"
 textColor = "#0F172A"
 font = "sans serif"
+showWidgetBorder = true
+showSidebarBorder = true
+baseRadius = "8px"
+buttonRadius = "8px"
+paddingTop = "1.5rem"
+paddingBottom = "3rem"
+
+[theme.sidebar]
+backgroundColor = "#F1F5F9"
+secondaryBackgroundColor = "#E2E8F0"
