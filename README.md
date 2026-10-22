@@ -1,6 +1,10 @@
 # 长伴 · 战略研究智能体
 
 <p align="center">
+  <img src="assets/logo.png" alt="长伴咨询 Accompany Consultation" width="380" />
+</p>
+
+<p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python Version" /></a>
   <a href="https://crewai.com/"><img src="https://img.shields.io/badge/CrewAI-Multi--Agent-orange.svg" alt="Framework" /></a>
   <a href="https://www.deepseek.com/"><img src="https://img.shields.io/badge/LLM-DeepSeek--V4.1--Flash-blueviolet.svg" alt="LLM" /></a>

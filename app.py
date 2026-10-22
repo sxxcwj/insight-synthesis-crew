@@ -193,6 +193,9 @@ st.markdown("""
 
 # 侧边栏：系统运行环境与智库档案
 with st.sidebar:
+    logo_path = Path("assets/logo.png")
+    if logo_path.exists():
+        st.image(str(logo_path), width="stretch")
     st.markdown("### 战略中枢控制台")
     st.caption("长伴咨询 · 战略研究智能体")
 
